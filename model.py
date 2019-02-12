@@ -24,7 +24,7 @@ class User(db.Model):
     user_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(64), nullable=False)
     password = db.Column(db.String(64), nullable=False)
-    # zipcode
+    zipcode = db.Column(db.Integer, nullable=False)
 
     #books = db.relationship('Book')
 

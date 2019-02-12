@@ -34,7 +34,7 @@ def register_form():
 def register_process():
     """getting store user_name. email and password to database"""
 
-    email = 
+    name = 
 
 
 
