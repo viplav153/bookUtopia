@@ -24,7 +24,9 @@ class User(db.Model):
     user_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(64), nullable=False)
     password = db.Column(db.String(64), nullable=False)
+    # zipcode
 
+    #books = db.relationship('Book')
 
     def __repr__(self):
         """Provied helpful representation when printed"""
@@ -42,7 +44,9 @@ class Book(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     
     #Connection with the User table, should I use "user insstead of users？"
-    users = db.relationship("User")
+    # user = db.relationship("User")
+
+    user = db.relationship("User", backref='books')
 
 
     def __repr__(self):
@@ -69,10 +73,10 @@ def connect_to_db(app):
 
 
     #Configure to use our database.
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///bookdb'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///bookdb'
 
     #Why false？ no need to debugging?
-    app.config['SQLALCHEMY_ECHO'] = False
+    #app.config['SQLALCHEMY_ECHO'] = False
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
     db.init_app(app)
