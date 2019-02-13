@@ -22,7 +22,7 @@ class User(db.Model):
 
     user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     user_name = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(64), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(64), nullable=False)
     zipcode = db.Column(db.Integer, nullable=False)
 
@@ -32,6 +32,8 @@ class User(db.Model):
         """Provied helpful representation when printed"""
 
         return ('User user_id={} email={}'.format(self.user_id, self.email))
+
+class 
 
 class Book(db.Model):
     """Book table for the LotOfBook webiste"""
