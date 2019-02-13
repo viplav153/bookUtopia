@@ -48,10 +48,11 @@ def register_process():
     flash(f"Welcome to the BookLot, {name}")
     return redirect("/")
 
-    # add to the user name welcome.
+
 
 @app.route("/login", methods=['GET'])
 def login_form():
+    """User login form"""
 
     return render_template("login.html")
 
@@ -59,6 +60,7 @@ def login_form():
 
 @app.route("/login", methods=['POST'])
 def logged_in():
+    """getting the user login name and password, check if matches with the database"""
 
     name = request.form.get("user_name")
     # print(name)
@@ -79,6 +81,15 @@ def logged_in():
 
     else:
         return redirect('/login')
+
+
+@app.route("/logout", methods=['GET'])
+def logout():
+    """Log out"""
+
+    del session['user_id']
+    flash("Logged out.")
+    return redirect("/")
 
 
 @app.route("/home")
@@ -118,12 +129,46 @@ def adding_book():
     
     return render_template("add_book.html")
 
-@app.route("/search")
+
+@app.route("/search", methods=['GET'])
+def search_form():
+
+    return render_template("/search.html")
+
+
+@app.route("/search", methods=['POST'])
+def search_func():
+
+    title = request.form.get("title")
+    author = request.form.get("author")
+ 
+    query = Book.query.filter(Book.title == title, Book.author == author).first()
+
+   
+
+    if query:
+        
+        flash("We have the book!")
+
+        return render_template('/search_result.html', query=query)
+    else:
+
+        flash("Sorry, book is no find, please search again.")
+        return redirect("/search")
 
 
 
+# @app.route("/search_result")
+# def search_result():
 
-if __name__ =="__main__":
+
+#     query = Book.query.filter(Book.title == title, Book.author == author).first()
+
+#     return render_template("/search_result.html", query=query)
+
+
+
+if __name__ == "__main__":
 
     app.debug = True
 

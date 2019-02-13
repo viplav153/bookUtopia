@@ -33,7 +33,7 @@ class User(db.Model):
 
         return ('User user_id={} email={}'.format(self.user_id, self.email))
 
-class 
+
 
 class Book(db.Model):
     """Book table for the LotOfBook webiste"""
