@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<div>
+
+    <ul>
+       
+        {% for item in books %}
+   
+        <li> Book Title: {{ item.title }}</li> 
+        <li> Boook Author:{{ item.author }}</li>
+
+        <button type="button">Update</button>
+
+
+        <form action="/delete" method="POST">
+          <input type="text" name="book_id" value="{{ item.book_id }}"">
+
+          <input type="submit" value=delete >
+        </form>
+
+
+
+        <br />
+        <br />
+
+
+        {% endfor %}
+
+
+    </ul>
+
+
+
+
+</div>
+
+
+
+
+
+{% endblock %}

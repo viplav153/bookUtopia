@@ -15,15 +15,20 @@ app.secret_key = "HBAC"
 
 app.jinja_env.undefined = StrictUndefined
 
-
+###################################################################
 @app.route("/")
 def index():
     """Homepage"""
+    
+    if session:
+        user = User.query.get(session['user_id'])
+        name = user.user_name
+        return render_template("homepage.html", name=name)
+    else:
+        return render_template("homepage.html")
 
-    return render_template("homepage.html")
 
-
-
+######################################################################
 @app.route("/register", methods=["GET"])
 def register_form():
     """registering a user"""
@@ -45,10 +50,10 @@ def register_process():
     db.session.add(new_user)
     db.session.commit()
     
-    flash(f"Welcome to the BookLot, {name}")
-    return redirect("/")
+   
+    return render_template("homepage.html", name=name)
 
-
+############################################################################
 
 @app.route("/login", methods=['GET'])
 def login_form():
@@ -81,7 +86,7 @@ def logged_in():
 
     else:
         return redirect('/login')
-
+################################################################################
 
 @app.route("/logout", methods=['GET'])
 def logout():
@@ -92,13 +97,16 @@ def logout():
     return redirect("/")
 
 
+###################################################################################
+
 @app.route("/home")
 def book_home():
     
+    books = Book.query.all()
 
-    return render_template("home.html")
+    return render_template("home.html", books=books)
 
-
+####################################################################################
 
 @app.route("/add_book", methods=['GET'])
 def add_form():
@@ -127,24 +135,29 @@ def adding_book():
     db.session.commit()
 
     
-    return render_template("add_book.html")
+    return redirect('/book_list')
 
-
+####################################################################################
 @app.route("/search", methods=['GET'])
 def search_form():
+
+
+
 
     return render_template("/search.html")
 
 
-@app.route("/search", methods=['POST'])
+@app.route("/search/<book_id>", methods=['POST'])
 def search_func():
 
     title = request.form.get("title")
     author = request.form.get("author")
+
+    book = Book.query.get(session['user_id'])
+    book_id = book.book_id
  
     query = Book.query.filter(Book.title == title, Book.author == author).first()
-
-   
+  
 
     if query:
         
@@ -154,19 +167,35 @@ def search_func():
     else:
 
         flash("Sorry, book is no find, please search again.")
+
         return redirect("/search")
+#####################################################################################
+
+# @app.route("/delete", methods=["POST"])
+# def delete_book():
+     
+#       book_id = request.form.get("book_id")
+
+#       book = Book(book_id=book_id)
+
+#       db.session.delete(book)
+#       db.session.commit()
+
+#       return redirect("/search")
 
 
 
-# @app.route("/search_result")
-# def search_result():
+#####################################################################################
+
+@app.route("/book_list")
+def book_list():
 
 
-#     query = Book.query.filter(Book.title == title, Book.author == author).first()
+    books = Book.query.filter(Book.user_id == session['user_id']).all()
+    return render_template("book_list.html", books=books)
 
-#     return render_template("/search_result.html", query=query)
 
-
+#######################################################################################
 
 if __name__ == "__main__":
 

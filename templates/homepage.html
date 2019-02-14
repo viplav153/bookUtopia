@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Welcome to the BookLot</h1>
+{% if session %}
+<h1>Welcome to the BookLot -- {{name}}</h1>
+{% endif %}
 
 <p><a href="/register">Sign Up</a></p>
 
 
 <p><a href="/login">Login</a></p>
-
-
 
 
 {% endblock %}

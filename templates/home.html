@@ -4,10 +4,31 @@
 <p><a href="/add_book">Add a Book</a></p>
 
 
-<p><a href="/">My Book List</a></p>
+<p><a href="/book_list">My Book List</a></p>
 
 <p><a href="/search">Search a book</a></p>
 
 <p><a href="/logout">Sign out</a></p>
+
+
+
+
+<div>
+
+    <ul>
+        {% for book in books %}
+        
+        <li>Book Title: {{book.title}}</li>
+        <li>Book Author: {{book.author}}</li>
+      <!--   <button type="button">Update</button> 
+        <button type="button">Delete</button> -->
+        <br/>
+        <br/>
+
+        {% endfor %}
+    </ul>
+        
+
+</div>
 
 {% endblock %}
