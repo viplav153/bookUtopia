@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 
+
+<h1>Welcome  {{ name }}</h1>
+
 <p><a href="/add_book">Add a Book</a></p>
 
 
@@ -16,12 +19,11 @@
 <div>
 
     <ul>
-        {% for book in books %}
+        {% for item in books %}
         
-        <li>Book Title: {{book.title}}</li>
-        <li>Book Author: {{book.author}}</li>
-      <!--   <button type="button">Update</button> 
-        <button type="button">Delete</button> -->
+        <li>Book Title: {{ item.title }}</li>
+        <li>Book Author: {{ item.author }}</li>
+      
         <br/>
         <br/>
 

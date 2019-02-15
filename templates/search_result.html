@@ -4,11 +4,22 @@
 
 <div>
     
-
-
-    <p>Book Title: {{ query.title }}</p>
+     
+    {% for item in book_result %}
+   
+    <p>Book: {{ item.title }}</p>
+    <p>Book: {{ item.author }}</p>
     
-    <p>Book Title: {{ query.author }}</p>
+    {% endfor %}
+    
+
+    {% for item in zipcode_result %}
+   
+    <p>Book: {{ item.title }}</p>
+    <p>Book: {{ item.author }}</p>
+    
+    {% endfor %}
+    
 
 
 

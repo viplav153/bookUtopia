@@ -6,11 +6,13 @@ from flask import(Flask, render_template, redirect, request, flash, session)
 from flask_debugtoolbar import DebugToolbarExtension
 
 from model import User, Book, connect_to_db, db
+import os 
+
 
 app = Flask(__name__)
 
-app.secret_key = "HBAC"
-#app.secret_key = os.environ['SECRET_KEY']
+
+app.secret_key = os.environ['secret_key']
 
 
 app.jinja_env.undefined = StrictUndefined
@@ -19,13 +21,7 @@ app.jinja_env.undefined = StrictUndefined
 @app.route("/")
 def index():
     """Homepage"""
-    
-    if session:
-        user = User.query.get(session['user_id'])
-        name = user.user_name
-        return render_template("homepage.html", name=name)
-    else:
-        return render_template("homepage.html")
+    return render_template("homepage.html")
 
 
 ######################################################################
@@ -50,7 +46,7 @@ def register_process():
     db.session.add(new_user)
     db.session.commit()
     
-   
+    flash(f"You successfully registed {name} .")
     return render_template("homepage.html", name=name)
 
 ############################################################################
@@ -68,12 +64,10 @@ def logged_in():
     """getting the user login name and password, check if matches with the database"""
 
     name = request.form.get("user_name")
-    # print(name)
     password = request.form.get("password")
-    # print(password)
-
+  
     query = User.query.filter(User.user_name == name, User.password == password).first()
-    # print(query)
+    
 
 
     if query:
@@ -82,6 +76,9 @@ def logged_in():
         flash("You are successfully logged in.")
 
         return redirect('/home')
+
+    # elif:
+
 
 
     else:
@@ -101,10 +98,15 @@ def logout():
 
 @app.route("/home")
 def book_home():
-    
-    books = Book.query.all()
 
-    return render_template("home.html", books=books)
+    if session:
+        user = User.query.get(session['user_id'])
+        name = user.user_name
+
+    
+        books = Book.query.all()
+
+        return render_template("home.html", books=books,name=name)
 
 ####################################################################################
 
@@ -118,6 +120,7 @@ def add_form():
 def adding_book():
 
     title = request.form.get("title")
+    print(title)
     author = request.form.get("author")
     
     #first title is param
@@ -138,50 +141,60 @@ def adding_book():
     return redirect('/book_list')
 
 ####################################################################################
-@app.route("/search", methods=['GET'])
+@app.route("/search")
 def search_form():
 
 
-
+    # book = Book.query.all()
+    # print(book)
+    # book_id = book[book_id]
+    # print(book_id)
 
     return render_template("/search.html")
 
 
-@app.route("/search/<book_id>", methods=['POST'])
+@app.route("/search", methods=['POST'])
 def search_func():
 
-    title = request.form.get("title")
-    author = request.form.get("author")
+    keyword = request.form.get('keyword')
 
-    book = Book.query.get(session['user_id'])
-    book_id = book.book_id
- 
-    query = Book.query.filter(Book.title == title, Book.author == author).first()
-  
+    book_result = Book.query.filter(db.or_(Book.title.contains(keyword),
+                                   Book.author.contains(keyword))).all()
+    #query with keyword in user table
+    # query = Book.query.filter(Book.title == title, Book.author == author).first()
+    zipcode = request.form.get('zipcode')
 
-    if query:
+    zipcode_result = User.query.filter(User.zipcode.contains(zipcode)).all()
+
+
+    if book_result or zipcode_result:
+         # r = book_result[0]
+         # title = r.title
+         # author = r.author
         
         flash("We have the book!")
 
-        return render_template('/search_result.html', query=query)
+        return render_template('search_result.html', book_result=book_result, zipcode_result=zipcode_result)
     else:
 
         flash("Sorry, book is no find, please search again.")
 
         return redirect("/search")
+
 #####################################################################################
 
-# @app.route("/delete", methods=["POST"])
-# def delete_book():
+@app.route("/delete", methods=["POST"])
+def delete_book():
      
-#       book_id = request.form.get("book_id")
+      book_id = request.form.get("book_id")
 
-#       book = Book(book_id=book_id)
+      bookid = Book.query.filter(Book.book_id == book_id).first()
 
-#       db.session.delete(book)
-#       db.session.commit()
 
-#       return redirect("/search")
+      db.session.delete(bookid)
+      db.session.commit()
+
+      return redirect('/book_list')
 
 
 

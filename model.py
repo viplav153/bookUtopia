@@ -1,6 +1,9 @@
 """Models and database functions for LotOfBooks project"""
 
+
 from flask_sqlalchemy import SQLAlchemy
+
+
 
 
 # This is the connection to the PostgreSQL database, we are getting this through
@@ -18,6 +21,7 @@ class User(db.Model):
     """User of the LofOfBook website"""
 
     __tablename__ = "users"
+    
 
 
     user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -28,17 +32,19 @@ class User(db.Model):
 
     #books = db.relationship('Book')
 
+
+
     def __repr__(self):
         """Provied helpful representation when printed"""
 
         return ('User user_id={} email={}'.format(self.user_id, self.email))
 
 
-
 class Book(db.Model):
     """Book table for the LotOfBook webiste"""
 
     __tablename__ = "books"
+   
 
     book_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -53,7 +59,8 @@ class Book(db.Model):
 
     def __repr__(self):
 
-        return ('Book title={}, author={}'.format(self.title, self.author))
+        return ('Book book_id={}, title={}, author={}'.format(self.book_id,self.title, self.author))
+
 
 
 ##########################################################3
@@ -79,7 +86,8 @@ def connect_to_db(app):
 
     #Why false？ no need to debugging?
     #app.config['SQLALCHEMY_ECHO'] = False
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+    app.config['WHOOSH_BASE'] = 'whoosh'
     db.app = app
     db.init_app(app)
 
