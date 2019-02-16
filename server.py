@@ -7,12 +7,18 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from model import User, Book, connect_to_db, db
 import os 
+import requests
+
+# from  book_api  import 
+
 
 
 app = Flask(__name__)
 
 
 app.secret_key = os.environ['secret_key']
+
+key = os.environ["book_api_key"]
 
 
 app.jinja_env.undefined = StrictUndefined
@@ -119,24 +125,52 @@ def add_form():
 @app.route("/add_book", methods=['POST'])
 def adding_book():
 
-    title = request.form.get("title")
-    print(title)
-    author = request.form.get("author")
+
+
+    user_isbn = request.form.get("isbn")
+
+
+    #Connect to the API to get the isbn book infomation.
+    url = "https://www.googleapis.com/books/v1/volumes"
+
+    key = os.environ["book_api_key"]
+
+    payload = {"q": "isbn:{}".format(user_isbn), "key": key}
+
+    r = requests.get(url, params=payload)
+
+    book_info = r.json()
+
+    # Loop through the json file to get title, author and image.
+    title = []
+    author = []
+    cover_url = []
+
+
+    for key in book_info.keys():
+
+     title_list = book_info["items"][0]["volumeInfo"]["title"]
+     title.append(title_list)
+
+     author_list = book_info["items"][0]["volumeInfo"]["authors"]
+     author.append(author_list)
+
+     cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
+     cover_url.append(cover_url_list)
+
+    
+
     
     #first title is param
-    book = Book(title=title, author=author, user_id=session['user_id'])
+    book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, user_id=session['user_id'])
 
     user = User.query.get(session['user_id'])
 
-    # user.books
-    # user.email
-
-    # book = Book.query.filter
+ 
 
 
     db.session.add(book)
     db.session.commit()
-
     
     return redirect('/book_list')
 
@@ -161,20 +195,21 @@ def search_func():
     book_result = Book.query.filter(db.or_(Book.title.contains(keyword),
                                    Book.author.contains(keyword))).all()
     #query with keyword in user table
-    # query = Book.query.filter(Book.title == title, Book.author == author).first()
-    zipcode = request.form.get('zipcode')
+    # # query = Book.query.filter(Book.title == title, Book.author == author).first()
+    # zipcode = request.form.get('zipcode')
 
-    zipcode_result = User.query.filter(User.zipcode.contains(zipcode)).all()
+    # zipcode_result = User.query.filter(User.zipcode.contains(zipcode)).all()
 
 
-    if book_result or zipcode_result:
+    if book_result:
+        # or zipcode_result
          # r = book_result[0]
          # title = r.title
          # author = r.author
         
         flash("We have the book!")
 
-        return render_template('search_result.html', book_result=book_result, zipcode_result=zipcode_result)
+        return render_template('search_result.html', book_result=book_result)
     else:
 
         flash("Sorry, book is no find, please search again.")

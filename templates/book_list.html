@@ -7,9 +7,13 @@
     <ul>
        
         {% for item in books %}
-   
-        <li> Book Title: {{ item.title }}</li> 
-        <li> Boook Author:{{ item.author }}</li>
+
+         
+        <p><img src="{{item.book_cover}}" /></p>
+        <p>{{ item.title }}</p> 
+        <p>{{ item.author }}</p>
+
+
 
         <button type="button">Update</button>
 

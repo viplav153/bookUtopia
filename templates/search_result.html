@@ -7,24 +7,11 @@
      
     {% for item in book_result %}
    
+    <p><img src="{{item.book_cover}}" /></p>
     <p>Book: {{ item.title }}</p>
     <p>Book: {{ item.author }}</p>
     
-    {% endfor %}
-    
-
-    {% for item in zipcode_result %}
-   
-    <p>Book: {{ item.title }}</p>
-    <p>Book: {{ item.author }}</p>
-    
-    {% endfor %}
-    
-
-
-
-
-
+    {% endfor %}    
 
 </div>
 
