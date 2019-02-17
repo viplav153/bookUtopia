@@ -9,7 +9,7 @@ from model import User, Book, connect_to_db, db
 import os 
 import requests
 
-# from  book_api  import 
+# from  book_api  
 
 
 
@@ -190,31 +190,63 @@ def search_form():
 @app.route("/search", methods=['POST'])
 def search_func():
 
-    keyword = request.form.get('keyword')
+    # keyword = request.form.get('keyword')
 
-    book_result = Book.query.filter(db.or_(Book.title.contains(keyword),
-                                   Book.author.contains(keyword))).all()
-    #query with keyword in user table
-    # # query = Book.query.filter(Book.title == title, Book.author == author).first()
-    # zipcode = request.form.get('zipcode')
+    # book_result = Book.query.filter(db.or_(Book.title.contains(keyword),
+    #                                Book.author.contains(keyword))).all()
+    # #query with keyword in user table
+    # # # query = Book.query.filter(Book.title == title, Book.author == author).first()
+    # # zipcode = request.form.get('zipcode')
+    
+    # r = book_result[0]
+    # title = r.title
+    # author = r.author
 
-    # zipcode_result = User.query.filter(User.zipcode.contains(zipcode)).all()
+    # if book_result:
+        
+        
+    #     flash("We have the book!")
+
+    #     return render_template('search_result.html', book_result=book_result)
+    # else:
+
+    #     flash("Sorry, book is no find, please search again.")
+
+    #     return redirect("/search")
 
 
-    if book_result:
-        # or zipcode_result
-         # r = book_result[0]
-         # title = r.title
-         # author = r.author
+
+
+    zipcode = request.form.get('zipcode')
+
+    zipcode_result = User.query.filter(User.zipcode == zipcode).all()
+
+    user = zipcode_result[0]
+
+    book = Book.query.filter(Book.user_id == user.user_id).all()
+
+    book_detail = book[0]
+
+    title = book_detail.title
+
+    author = book_detail.author
+
+    ISBN   = book_detail.ISBN
+
+    cover_url = book_detail.book_cover
+
+    if zipcode_result:
+        
         
         flash("We have the book!")
 
-        return render_template('search_result.html', book_result=book_result)
+        return render_template('search_result.html', book=book, book_cover=cover_url, title=title, author=author, ISBN=ISBN )
     else:
 
         flash("Sorry, book is no find, please search again.")
 
         return redirect("/search")
+
 
 #####################################################################################
 
