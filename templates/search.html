@@ -1,18 +1,33 @@
+
 {% extends 'base.html' %}
 {% block content %}
 
-<form action="/search", method='POST'>
-    <label>
-        <input type="text" name="keyword">
-    </label><br/>
-    <br/>
-    <br/>
-    <input type="submit" value="Search">
-    
 
+
+
+<label>Search Book By:</label>
+</br>
+</br>
+
+<form method="POST" action="/search">
+<select name="choice">
+  <option name="" value="{{choices[0]}}" selected>{{choices[0]}}</option>
+  {% for choice in choices[1:] %}
+    <option value="{{choice}}">{{choice}}</option>
+  {% endfor %}
+</select>
+
+
+</br>
+</br>
+
+<input type="text" name="search">
+
+
+</br>
+</br>
+
+<input type="submit" value="search">
 
 </form>
-
-
-
 {% endblock %}

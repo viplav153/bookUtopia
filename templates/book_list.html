@@ -10,8 +10,9 @@
 
          
         <p><img src="{{item.book_cover}}" /></p>
-        <p>{{ item.title }}</p> 
-        <p>{{ item.author }}</p>
+        <p>Title: {{ item.title }}</p> 
+        <p>Author: {{ item.author[2:-2] }}</p>
+        <p>ISBN: {{ item.ISBN }}</p>
 
 
 

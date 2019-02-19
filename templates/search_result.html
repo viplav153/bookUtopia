@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% block content %}
 <br>
@@ -8,8 +9,9 @@
     {% for item in book_result %}
    
     <p><img src="{{item.book_cover}}" /></p>
-    <p>Book: {{ item.title }}</p>
-    <p>Book: {{ item.author }}</p>
+    <p>Title: {{ item.title }}</p>
+    <p>Author: {{ item.author[2:-2] }}</p>
+    <p>ISBN: {{ item.ISBN }}</p>
     
     {% endfor %}    
 

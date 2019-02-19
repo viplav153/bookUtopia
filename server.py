@@ -1,15 +1,13 @@
 """Books Sharing"""
 
 from jinja2 import StrictUndefined
-
 from flask import(Flask, render_template, redirect, request, flash, session)
 from flask_debugtoolbar import DebugToolbarExtension
-
 from model import User, Book, connect_to_db, db
-import os 
 import requests
+import os 
 
-# from  book_api  
+# from  book_api  import search
 
 
 
@@ -83,7 +81,7 @@ def logged_in():
 
         return redirect('/home')
 
-    # elif:
+    
 
 
 
@@ -124,7 +122,6 @@ def add_form():
 
 @app.route("/add_book", methods=['POST'])
 def adding_book():
-
 
 
     user_isbn = request.form.get("isbn")
@@ -174,78 +171,89 @@ def adding_book():
     
     return redirect('/book_list')
 
+#Search funtion:
 ####################################################################################
-@app.route("/search")
+@app.route("/search", methods=['GET'])
 def search_form():
+    choices = ['Keyword', 'Title', 'Author', 'Zipcode']
+ 
+    return render_template("/search.html", choices=choices)
 
-
-    # book = Book.query.all()
-    # print(book)
-    # book_id = book[book_id]
-    # print(book_id)
-
-    return render_template("/search.html")
 
 
 @app.route("/search", methods=['POST'])
 def search_func():
 
-    # keyword = request.form.get('keyword')
+
+    user_choice = request.form.get('choice')
+    user_input = request.form.get('search')
+
+    if user_choice == 'Keyword':
+        book_result = Book.query.filter(db.or_(Book.title.contains(user_input),
+                                        Book.author.contains(user_input))).all()
+    # elif user_choice == 'Title':
+
+    elif user_choice == 'Title':
+        book_result = Book.query.filter(Book.title.contains(user_input)).all()
+
+
+    elif user_choice == 'Author':
+        book_result = Book.query.filter(Book.author.contains(user_input)).all()
+
+
+    # elif user_choice == 'Zipcode':
+
+
+
 
     # book_result = Book.query.filter(db.or_(Book.title.contains(keyword),
-    #                                Book.author.contains(keyword))).all()
-    # #query with keyword in user table
-    # # # query = Book.query.filter(Book.title == title, Book.author == author).first()
-    # # zipcode = request.form.get('zipcode')
-    
-    # r = book_result[0]
-    # title = r.title
-    # author = r.author
+                                   # Book.author.contains(keyword))).all()
+    #query with keyword in user table
+    # # query = Book.query.filter(Book.title == title, Book.author == author).first()
+    # zipcode = request.form.get('zipcode')
+   
 
-    # if book_result:
-        
-        
-    #     flash("We have the book!")
-
-    #     return render_template('search_result.html', book_result=book_result)
-    # else:
-
-    #     flash("Sorry, book is no find, please search again.")
-
-    #     return redirect("/search")
-
-
-
-
-    zipcode = request.form.get('zipcode')
-
-    zipcode_result = User.query.filter(User.zipcode == zipcode).all()
-
-    user = zipcode_result[0]
-
-    book = Book.query.filter(Book.user_id == user.user_id).all()
-
-    book_detail = book[0]
-
-    title = book_detail.title
-
-    author = book_detail.author
-
-    ISBN   = book_detail.ISBN
-
-    cover_url = book_detail.book_cover
-
-    if zipcode_result:
+    if book_result:
         
         
         flash("We have the book!")
 
-        return render_template('search_result.html', book=book, book_cover=cover_url, title=title, author=author, ISBN=ISBN )
+        return render_template('search_result.html', book_result=book_result)
     else:
 
         flash("Sorry, book is no find, please search again.")
 
         return redirect("/search")
+# ###################################################################################
+#     zipcode = request.form.get('zipcode')
+
+#     zipcode_result = User.query.filter(User.zipcode == zipcode).all()
+
+#     user = zipcode_result[0]
+
+#     book = Book.query.filter(Book.user_id == user.user_id).all()
+
+#     book_detail = book[0]
+
+#     title = book_detail.title
+
+#     author = book_detail.author
+
+#     ISBN   = book_detail.ISBN
+
+#     cover_url = book_detail.book_cover
+
+#     if zipcode_result:
+        
+        
+#         flash("We have the book!")
+
+#         return render_template('search_result.html', book=book, book_cover=cover_url, title=title, author=author, ISBN=ISBN )
+#     else:
+
+#         flash("Sorry, book is no find, please search again.")
+
+#         return redirect("/search")
 
 
 #####################################################################################
@@ -272,6 +280,8 @@ def book_list():
 
 
     books = Book.query.filter(Book.user_id == session['user_id']).all()
+
+    
     return render_template("book_list.html", books=books)
 
 
