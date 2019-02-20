@@ -26,9 +26,17 @@
         <p>Title: {{ item.title }}</p>
         <p>Author: {{ item.author[2:-2] }}</p>
          <p>ISBN: {{ item.ISBN }}</p>
-      
-        <br/>
-        <br/>
+
+        
+        <form action="/request" method="POST">
+
+            <input type="text" name="book_id" value="{{ item.book_id }}"">
+
+            <input type="submit" value="Request this Book">
+        </form>
+        </br>
+        </br>
+
 
         {% endfor %}
     </ul>
