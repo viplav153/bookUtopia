@@ -4,21 +4,15 @@ from jinja2 import StrictUndefined
 from flask import(Flask, render_template, redirect, request, flash, session)
 from flask_debugtoolbar import DebugToolbarExtension
 from model import User, Book, connect_to_db, db
+from sqlalchemy import func
+from twilio.rest import Client
 import requests
 import os 
 
-# from  book_api  import search
-
-
 
 app = Flask(__name__)
-
-
 app.secret_key = os.environ['secret_key']
-
 key = os.environ["book_api_key"]
-
-
 app.jinja_env.undefined = StrictUndefined
 
 ###################################################################
@@ -81,13 +75,9 @@ def logged_in():
 
         return redirect('/home')
 
-    
-
-
-
     else:
         return redirect('/login')
-################################################################################
+################################################################################Logout
 
 @app.route("/logout", methods=['GET'])
 def logout():
@@ -98,7 +88,7 @@ def logout():
     return redirect("/")
 
 
-###################################################################################
+###################################################################################Login User homepage
 
 @app.route("/home")
 def book_home():
@@ -107,12 +97,13 @@ def book_home():
         user = User.query.get(session['user_id'])
         name = user.user_name
 
-    
         books = Book.query.all()
 
         return render_template("home.html", books=books,name=name)
 
-####################################################################################
+
+
+####################################################################################Add function
 
 @app.route("/add_book", methods=['GET'])
 def add_form():
@@ -122,10 +113,7 @@ def add_form():
 
 @app.route("/add_book", methods=['POST'])
 def adding_book():
-
-
     user_isbn = request.form.get("isbn")
-
 
     #Connect to the API to get the isbn book infomation.
     url = "https://www.googleapis.com/books/v1/volumes"
@@ -154,25 +142,19 @@ def adding_book():
 
      cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
      cover_url.append(cover_url_list)
-
-    
-
     
     #first title is param
     book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, user_id=session['user_id'])
 
     user = User.query.get(session['user_id'])
 
- 
-
-
     db.session.add(book)
     db.session.commit()
     
     return redirect('/book_list')
 
-#Search funtion:
-####################################################################################
+
+#####################################################################################Search funtion:
 @app.route("/search", methods=['GET'])
 def search_form():
     choices = ['Keyword', 'Title', 'Author', 'Zipcode']
@@ -187,34 +169,37 @@ def search_func():
 
     user_choice = request.form.get('choice')
     user_input = request.form.get('search')
+  
+
+# user = models.User.query.filter(func.lower(User.username) == func.lower("GaNyE")).firs
 
     if user_choice == 'Keyword':
-        book_result = Book.query.filter(db.or_(Book.title.contains(user_input),
-                                        Book.author.contains(user_input))).all()
+        book_result = Book.query.filter(db.or_(Book.title.ilike(f'%{user_input}%')),
+                                        Book.author.ilike(f'%{user_input}%')).all()
     # elif user_choice == 'Title':
 
+      
+
     elif user_choice == 'Title':
-        book_result = Book.query.filter(Book.title.contains(user_input)).all()
+        book_result = Book.query.filter(Book.title.ilike(f'%{user_input}%')).all()
 
 
     elif user_choice == 'Author':
-        book_result = Book.query.filter(Book.author.contains(user_input)).all()
+        book_result = Book.query.filter(Book.author.ilike(f'%{user_input}%')).all()
 
 
-    # elif user_choice == 'Zipcode':
+    elif user_choice == 'Zipcode':
+        zipcode_result = User.query.filter(User.zipcode == user_input).all()
 
+        print(zipcode_result)
+        user = zipcode_result[0]
+        book_result = Book.query.filter(Book.user_id == user.user_id).all()
 
+        # if len(user_input) > 5:
+        #     flash("Invalid zipcode")
 
-
-    # book_result = Book.query.filter(db.or_(Book.title.contains(keyword),
-                                   # Book.author.contains(keyword))).all()
-    #query with keyword in user table
-    # # query = Book.query.filter(Book.title == title, Book.author == author).first()
-    # zipcode = request.form.get('zipcode')
-   
 
     if book_result:
-        
         
         flash("We have the book!")
 
@@ -224,36 +209,44 @@ def search_func():
         flash("Sorry, book is no find, please search again.")
 
         return redirect("/search")
-# ###################################################################################
-#     zipcode = request.form.get('zipcode')
+####################################################################################
 
-#     zipcode_result = User.query.filter(User.zipcode == zipcode).all()
+@app.route("/request", methods=['POST'])
+def request_book():
 
-#     user = zipcode_result[0]
+    user_request = request.form.get('book_id')
 
-#     book = Book.query.filter(Book.user_id == user.user_id).all()
+    print(user_request)
 
-#     book_detail = book[0]
+    if user_request:
+        account_sid = os.environ["twilio_sid"]
+        auth_token = os.environ["twilio_token"]
 
-#     title = book_detail.title
+        user = User.query.get(session['user_id'])
+        name = user.user_name
+        email = user.email
 
-#     author = book_detail.author
+        book = Book.query.get(user_request)
+        title = book.title
 
-#     ISBN   = book_detail.ISBN
 
-#     cover_url = book_detail.book_cover
 
-#     if zipcode_result:
-        
-        
-#         flash("We have the book!")
+        client = Client(account_sid, auth_token)
 
-#         return render_template('search_result.html', book=book, book_cover=cover_url, title=title, author=author, ISBN=ISBN )
-#     else:
+        message = client.messages.create(
+                                      from_='+16503824264',
+                                      body='Hello, my name is {}, I am interested your {} book, If it still available, please contact me at {} ?'.format(name, title, email),
+                                      to='+15103040780'
+                                  )
 
-#         flash("Sorry, book is no find, please search again.")
+       
 
-#         return redirect("/search")
+        flash('Your request had sent!')
+
+
+        return redirect("/home")
+
+
 
 
 #####################################################################################
@@ -270,8 +263,6 @@ def delete_book():
       db.session.commit()
 
       return redirect('/book_list')
-
-
 
 #####################################################################################
 
