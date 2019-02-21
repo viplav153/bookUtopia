@@ -101,8 +101,6 @@ def book_home():
 
         return render_template("home.html", books=books,name=name)
 
-
-
 ####################################################################################Add function
 
 @app.route("/add_book", methods=['GET'])
@@ -134,14 +132,14 @@ def adding_book():
 
     for key in book_info.keys():
 
-     title_list = book_info["items"][0]["volumeInfo"]["title"]
-     title.append(title_list)
+        title_list = book_info["items"][0]["volumeInfo"]["title"]
+        title.append(title_list)
 
-     author_list = book_info["items"][0]["volumeInfo"]["authors"]
-     author.append(author_list)
+        author_list = book_info["items"][0]["volumeInfo"]["authors"]
+        author.append(author_list)
 
-     cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
-     cover_url.append(cover_url_list)
+        cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
+        cover_url.append(cover_url_list)
     
     #first title is param
     book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, user_id=session['user_id'])
@@ -167,36 +165,86 @@ def search_form():
 def search_func():
 
 
-    user_choice = request.form.get('choice')
-    user_input = request.form.get('search')
-  
-
-# user = models.User.query.filter(func.lower(User.username) == func.lower("GaNyE")).firs
-
-    if user_choice == 'Keyword':
-        book_result = Book.query.filter(db.or_(Book.title.ilike(f'%{user_input}%')),
-                                        Book.author.ilike(f'%{user_input}%')).all()
-    # elif user_choice == 'Title':
-
-      
-
-    elif user_choice == 'Title':
-        book_result = Book.query.filter(Book.title.ilike(f'%{user_input}%')).all()
+    search_type = request.form.get('choice')
+    search_terms = request.form.get('search')
 
 
-    elif user_choice == 'Author':
-        book_result = Book.query.filter(Book.author.ilike(f'%{user_input}%')).all()
+    if  search_type == 'Keyword':
+
+        if len(search_terms.split()) >= 1:
+            book_result = Book.query.filter(Book.title.ilike('%{}%'.format(search_terms))|
+                                        Book.author.ilike('%{}%'.format(search_terms))).all()
+
+        if len(search_terms.split()) >= 2:
+
+            words = search_terms.split()
+            
+            result1 = Book.query.filter(Book.title.ilike('%{}%'.format(words[0]))|
+                                        Book.author.ilike('%{}%'.format(words[0]))).all()
+        
+                
+            result2 = Book.query.filter(Book.title.ilike('%{}%'.format(words[1]))|
+                                        Book.author.ilike('%{}%'.format(words[1]))).all()
+                
+            book_result = set(result1) & set(result2)
+            
+ 
+
+    elif search_type == 'Title':
+
+        if len(search_terms.split()) <= 1:
+
+            book_result = Book.query.filter(Book.title.ilike('%{}%'.format(search_terms))).all()
+
+        if len(search_terms.split()) >= 2:
+
+            words = search_terms.split()
+
+            results = []
+
+            for word in words:
+
+                print(word)
+                result = Book.query.filter(Book.title.ilike('%{}%'.format(word))).all()
+
+                print(result)
+                results.append(result)
+
+            print(results)
+
+                
+            book_result = set(results[0])
+            for result in results:
+                book_result = book_result & set(result)
+
+    
+
+    elif search_type == 'Author':
+
+        if len(search_terms.split()) >= 1:
+            book_result = Book.query.filter(Book.author.ilike('%{}%'.format(search_terms))).all()
+
+        if len(search_terms.split()) >= 2:
+            words = search_terms.split()
+            
+            result1 = Book.query.filter(Book.author.ilike('%{}%'.format(words[0]))).all()
+        
+                
+            result2 = Book.query.filter(Book.author.ilike('%{}%'.format(words[1]))).all()
+                
+            book_result = set(result1) & set(result2)
 
 
-    elif user_choice == 'Zipcode':
-        zipcode_result = User.query.filter(User.zipcode == user_input).all()
+    elif search_type == 'Zipcode':
+        if len(search_terms) < 5 or len(search_terms) > 5:
 
-        print(zipcode_result)
-        user = zipcode_result[0]
-        book_result = Book.query.filter(Book.user_id == user.user_id).all()
+            flash("Please  enter valid 5 digits Zipcode ")
 
-        # if len(user_input) > 5:
-        #     flash("Invalid zipcode")
+            return redirect("/search")
+        else:
+            zipcode_result = User.query.filter(User.zipcode == search_terms).all()
+            user = zipcode_result[0]
+            book_result = Book.query.filter(Book.user_id == user.user_id).all()
 
 
     if book_result:
@@ -209,7 +257,10 @@ def search_func():
         flash("Sorry, book is no find, please search again.")
 
         return redirect("/search")
+
+
 ####################################################################################
+#twilio SMS message 
 
 @app.route("/request", methods=['POST'])
 def request_book():
@@ -245,7 +296,6 @@ def request_book():
 
 
         return redirect("/home")
-
 
 
 
