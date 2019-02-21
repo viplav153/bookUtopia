@@ -120,27 +120,35 @@ def adding_book():
 
     payload = {"q": "isbn:{}".format(user_isbn), "key": key}
 
+    print(payload)
+
     r = requests.get(url, params=payload)
 
     book_info = r.json()
+
+    print(book_info)
 
     # Loop through the json file to get title, author and image.
     title = []
     author = []
     cover_url = []
 
+    try:
+        for key in book_info.keys():
 
-    for key in book_info.keys():
+            title_list = book_info["items"][0]["volumeInfo"]["title"]
+            title.append(title_list)
 
-        title_list = book_info["items"][0]["volumeInfo"]["title"]
-        title.append(title_list)
+            author_list = book_info["items"][0]["volumeInfo"]["authors"]
+            author.append(author_list)
 
-        author_list = book_info["items"][0]["volumeInfo"]["authors"]
-        author.append(author_list)
+            cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
+            cover_url.append(cover_url_list)
 
-        cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
-        cover_url.append(cover_url_list)
-    
+    except KeyError:
+
+            cover_url = "https://web.northamptoncounty.org/Corrections/images/No_image_available.png"
+
     #first title is param
     book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, user_id=session['user_id'])
 
@@ -179,16 +187,19 @@ def search_func():
 
             words = search_terms.split()
             
-            result1 = Book.query.filter(Book.title.ilike('%{}%'.format(words[0]))|
-                                        Book.author.ilike('%{}%'.format(words[0]))).all()
-        
+            results =[]
+
+            for word in words:
+
+                result = Book.query.filter(Book.title.ilike('%{}%'.format(search_terms))|
+                                        Book.author.ilike('%{}%'.format(search_terms))).all()
+
+                results.append(result)
                 
-            result2 = Book.query.filter(Book.title.ilike('%{}%'.format(words[1]))|
-                                        Book.author.ilike('%{}%'.format(words[1]))).all()
-                
-            book_result = set(result1) & set(result2)
-            
- 
+            book_result = set(results[0])
+            for result in results:
+                book_result = book_result & set(result)
+
 
     elif search_type == 'Title':
 
@@ -204,15 +215,10 @@ def search_func():
 
             for word in words:
 
-                print(word)
                 result = Book.query.filter(Book.title.ilike('%{}%'.format(word))).all()
 
-                print(result)
                 results.append(result)
 
-            print(results)
-
-                
             book_result = set(results[0])
             for result in results:
                 book_result = book_result & set(result)
@@ -227,12 +233,17 @@ def search_func():
         if len(search_terms.split()) >= 2:
             words = search_terms.split()
             
-            result1 = Book.query.filter(Book.author.ilike('%{}%'.format(words[0]))).all()
-        
-                
-            result2 = Book.query.filter(Book.author.ilike('%{}%'.format(words[1]))).all()
-                
-            book_result = set(result1) & set(result2)
+            results = []
+
+            for word in words:
+
+                result = Book.query.filter(Book.author.ilike('%{}%'.format(word))).all()
+
+                results.append(result)
+
+            book_result = set(results[0])
+            for result in results:
+                book_result = book_result & set(result)
 
 
     elif search_type == 'Zipcode':
