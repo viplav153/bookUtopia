@@ -35,11 +35,12 @@ def register_process():
     """getting store user_name. email and password to database"""
 
     name = request.form.get("user_name")
+    phone = request.form.get("phone")
     email = request.form.get("email")
     password = request.form.get("password")
     zipcode = request.form.get("zipcode")
 
-    new_user = User(user_name=name, email=email, password=password, zipcode=zipcode)
+    new_user = User(user_name=name, email=email, phone_number=phone, password=password, zipcode=zipcode)
 
     db.session.add(new_user)
     db.session.commit()
@@ -163,6 +164,8 @@ def adding_book():
 #####################################################################################Search funtion:
 @app.route("/search", methods=['GET'])
 def search_form():
+
+
     choices = ['Keyword', 'Title', 'Author', 'Zipcode']
  
     return render_template("/search.html", choices=choices)
@@ -193,10 +196,9 @@ def search_func():
 
                 result = Book.query.filter(Book.title.ilike('%{}%'.format(search_terms))|
                                         Book.author.ilike('%{}%'.format(search_terms))).all()
-
                 results.append(result)
-                
             book_result = set(results[0])
+
             for result in results:
                 book_result = book_result & set(result)
 
@@ -222,7 +224,7 @@ def search_func():
             book_result = set(results[0])
             for result in results:
                 book_result = book_result & set(result)
-
+                print(book_result)
     
 
     elif search_type == 'Author':
@@ -278,7 +280,6 @@ def request_book():
 
     user_request = request.form.get('book_id')
 
-    print(user_request)
 
     if user_request:
         account_sid = os.environ["twilio_sid"]
@@ -287,9 +288,16 @@ def request_book():
         user = User.query.get(session['user_id'])
         name = user.user_name
         email = user.email
+        phone = user.phone_number
+      
 
         book = Book.query.get(user_request)
         title = book.title
+
+        subject = request.form.get('subject')
+        durantion = request.form.get('durantion')
+        message = request.form.get('message')
+      
 
 
 
@@ -297,8 +305,8 @@ def request_book():
 
         message = client.messages.create(
                                       from_='+16503824264',
-                                      body='Hello, my name is {}, I am interested your {} book, If it still available, please contact me at {} ?'.format(name, title, email),
-                                      to='+15103040780'
+                                      body='<{}> --- Hello, my name is {}, I am interested your {} book, I would love to borrow it for {} .If it still available, please contact me at {}. --- Note for Owner: {}'.format(subject, name, title, durantion, email, message),
+                                      to=phone
                                   )
 
        
@@ -306,7 +314,7 @@ def request_book():
         flash('Your request had sent!')
 
 
-        return redirect("/home")
+    return redirect("/home")
 
 
 

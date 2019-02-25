@@ -1,31 +1,75 @@
 
 {% extends 'base.html' %}
 {% block content %}
-<br>
 
+
+<link rel="stylesheet" href="/static/style.css">
 <div>
     
      
     {% for item in book_result %}
    
     <p><img src="{{item.book_cover}}" /></p>
-    <p>Title: {{ item.title }}</p>
+    <p>Title:<i>{{ item.title }}</i></p>
     <p>Author: {{ item.author[2:-2] }}</p>
     <p>ISBN: {{ item.ISBN }}</p>
-    <input type="submit" value="Request this Book" name="request">
+     <button onclick="document.getElementById('id01').style.display='block'">Request Book</button>
 
-    <form action="/request" method="POST">
+
+
+        <!-- The Modal -->
+        <div id="id01" class="modal">
+         <!-- -->
+
+          <!-- Modal Content -->
+          <form class="modal-content animate" action="/request", method="POST">
 
             <input type="text" name="book_id" value="{{ item.book_id }}"">
 
-            <input type="submit" value="Request this Book">
-    </form>
-    
-    {% endfor %}    
+            <div class="container">
+              <label>Subject</label>
+              <input type="text" id="lname" name="subject" placeholder="Please Enter Subject">
 
-</div>
+              
+               <label>Duration </label>
+                <select id="country" name="durantion">
+                  <option value="1 week">1 week </option>
+                  <option value="1 month">1 month </option>
+                  <option value="2 month">2 month</option>
+                </select>
+
+               <label> Message: </label>
+               <textarea id="subject" name="message" placeholder="Write something to the Owner.." style="height:200px"></textarea>
+
+               <input type="submit" value="Submit">
+            </div>
+
+            <div class="container" style="background-color:#f1f1f1">
+              <button type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">Cancel</button>
+            </div>
+          </form>
+
+
+        </div>
+
+
+        <script>
+            // Get the modal
+            
+                // Get the modal
+                var modal = document.getElementById('id01');
+
+                // When the user clicks anywhere outside of the modal, close it
+                window.onclick = function(event) {
+                  if (event.target == modal) {
+                    modal.style.display = "none";
+                  }
+                }
+
+        </script>
+</div>  
+        {% endfor %}     
 
 
 
-
-{% endblock %}
+{% endblock %} 
