@@ -50,7 +50,7 @@ class Book(db.Model):
     book_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     author = db.Column(db.String(80), nullable=False)
-    ISBN  =  db.Column(db.String(13), nullable=False, unique=True)
+    ISBN  =  db.Column(db.String(13), nullable=False)
     book_cover = db.Column(db.String(1000), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     

@@ -20,7 +20,7 @@
 
 
         <form action="/delete" method="POST">
-          <input type="text" name="book_id" value="{{ item.book_id }}"">
+          <input type="hidden" name="book_id" value="{{ item.book_id }}"">
 
           <input type="submit" value=delete >
         </form>

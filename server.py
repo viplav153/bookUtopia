@@ -1,8 +1,9 @@
 """Books Sharing"""
 
 from jinja2 import StrictUndefined
-from flask import(Flask, render_template, redirect, request, flash, session)
+from flask import Flask, render_template, redirect, request, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_googlemaps import GoogleMaps, Map
 from model import User, Book, connect_to_db, db
 from sqlalchemy import func
 from twilio.rest import Client
@@ -13,7 +14,10 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ['secret_key']
 key = os.environ["book_api_key"]
+map_key = os.environ["google_map_key"]
 app.jinja_env.undefined = StrictUndefined
+
+GoogleMaps(app, key=map_key)
 
 ###################################################################
 @app.route("/")
@@ -150,6 +154,7 @@ def adding_book():
 
             cover_url = "https://web.northamptoncounty.org/Corrections/images/No_image_available.png"
 
+
     #first title is param
     book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, user_id=session['user_id'])
 
@@ -168,7 +173,7 @@ def search_form():
 
     choices = ['Keyword', 'Title', 'Author', 'Zipcode']
  
-    return render_template("/search.html", choices=choices)
+    return render_template("search.html", choices=choices)
 
 
 
@@ -264,12 +269,39 @@ def search_func():
         
         flash("We have the book!")
 
-        return render_template('search_result.html', book_result=book_result)
+        mymap = Map(
+        identifier="view-side",
+        lat=37.4419,
+        lng=-122.1419,
+        markers=[(37.4419, -122.1419)]
+        )
+    
+        sndmap = Map(
+        identifier="sndmap",
+        lat=37.4419,
+        lng=-122.1419,
+        markers=[
+          {
+             'icon': 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+             'lat': 37.4419,
+             'lng': -122.1419,
+             'infobox': "<b>Hello World</b>"
+          },
+          {
+             'icon': 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+             'lat': 37.4300,
+             'lng': -122.1400,
+             'infobox': "<b>Hello World from other place</b>"
+          }
+        ]
+        )
+
+        return render_template('search_result.html', book_result=book_result, mymap=mymap, sndmap=sndmap)
     else:
 
         flash("Sorry, book is no find, please search again.")
 
-        return redirect("/search")
+        return redirect("search")
 
 
 ####################################################################################
@@ -315,7 +347,6 @@ def request_book():
 
 
     return redirect("/home")
-
 
 
 #####################################################################################

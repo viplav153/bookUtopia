@@ -2,7 +2,11 @@
 <html>
 <head>
   <title>Lot Of Books</title>
+  {% block extrahead %}
+
+  {% endblock %}
 </head>
+
 
 <body>
   {% for message in get_flashed_messages() %}
