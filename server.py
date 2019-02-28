@@ -3,8 +3,8 @@
 from jinja2 import StrictUndefined
 from flask import Flask, render_template, redirect, request, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
-from flask_googlemaps import GoogleMaps, Map
 from model import User, Book, connect_to_db, db
+from pyisbn import convert as convert_isbn
 from sqlalchemy import func
 from twilio.rest import Client
 import requests
@@ -17,7 +17,6 @@ key = os.environ["book_api_key"]
 map_key = os.environ["google_map_key"]
 app.jinja_env.undefined = StrictUndefined
 
-GoogleMaps(app, key=map_key)
 
 ###################################################################
 @app.route("/")
@@ -121,47 +120,92 @@ def adding_book():
     #Connect to the API to get the isbn book infomation.
     url = "https://www.googleapis.com/books/v1/volumes"
 
-    key = os.environ["book_api_key"]
+    map_key = os.environ["book_api_key"]
 
-    payload = {"q": "isbn:{}".format(user_isbn), "key": key}
+    payload = {"q": "isbn:{}".format(user_isbn), "key": map_key}
 
     print(payload)
 
-    r = requests.get(url, params=payload)
+    response = requests.get("https://www.googleapis.com/books/v1/volumes", params=payload)
 
-    book_info = r.json()
+    book_info = response.json()
 
-    print(book_info)
+    # if book_info["totalItems"] >= 1: # pragma: no cover
+    #     title_list = book_info["items"][0]["volumeInfo"]["title"]
+    #     author_list = book_info["items"][0]["volumeInfo"]["authors"]
+    #     cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
 
+    # elif book_info["totalItems"] < 1: # pragma: no cover
+    #     #library.link requires isbn-13, so convert book.isbn to isbn-13
+    #     isbn13 = convert_isbn(user_isbn)
+
+    
     # Loop through the json file to get title, author and image.
+    
+
     title = []
     author = []
     cover_url = []
 
-    try:
-        for key in book_info.keys():
+    for key in book_info.keys():
 
+        
+        if book_info["totalItems"] >= 1: # pragma: no cover
             title_list = book_info["items"][0]["volumeInfo"]["title"]
-            title.append(title_list)
-
             author_list = book_info["items"][0]["volumeInfo"]["authors"]
-            author.append(author_list)
-
             cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
-            cover_url.append(cover_url_list)
 
-    except KeyError:
+        elif book_info["totalItems"] < 1: # pragma: no cover
+        #library.link requires isbn-13, so convert book.isbn to isbn-13
+            isbn13 = convert_isbn(user_isbn)
 
-            cover_url = "https://web.northamptoncounty.org/Corrections/images/No_image_available.png"
+            print(isbn13)
+
+    
+
+        # if 'title' not in book_details:
+        
+        #     return redirect("/search")
+#         # else:
+#         title_list = book_info["items"][0]["volumeInfo"]["title"]
+#         title.append(title_list)
+
+
+#         # if 'authors' not in book_details:
+#         #     author_list = book_info["items"][0]["volumeInfo"]["publisher"]
+#         # else:
+#         author_list = book_info["items"][0]["volumeInfo"]["authors"]
+#         author.append(author_list)
+
+# ##############################################################
+#         # book_details = book_info["items"][0]["volumeInfo"]
+#         # if 'imageLinks' not in book_details:
+
+#         #     cover_url_list = "https://web.northamptoncounty.org/Corrections/images/No_image_available.png"
+#         # else:
+#         cover_url_list = book_info["items"][0]["volumeInfo"]["imageLinks"]
+  
+#         cover_url.append(cover_url_list)
+        title_list = book_info["items"][0]["volumeInfo"]["title"]
+        title.append(title_list)
+
+        author_list = book_info["items"][0]["volumeInfo"]["authors"]
+        author.append(author_list)
+
+        cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
+        cover_url.append(cover_url_list)
+  
 
 
     #first title is param
-    book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, user_id=session['user_id'])
+    book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=isbn13, user_id=session['user_id'])
 
     user = User.query.get(session['user_id'])
 
     db.session.add(book)
     db.session.commit()
+
+    #Book.availability == True.
     
     return redirect('/book_list')
 
@@ -175,7 +219,7 @@ def search_form():
  
     return render_template("search.html", choices=choices)
 
-
+#################################################
 
 @app.route("/search", methods=['POST'])
 def search_func():
@@ -264,44 +308,21 @@ def search_func():
             user = zipcode_result[0]
             book_result = Book.query.filter(Book.user_id == user.user_id).all()
 
+            
+    
 
     if book_result:
         
         flash("We have the book!")
 
-        mymap = Map(
-        identifier="view-side",
-        lat=37.4419,
-        lng=-122.1419,
-        markers=[(37.4419, -122.1419)]
-        )
-    
-        sndmap = Map(
-        identifier="sndmap",
-        lat=37.4419,
-        lng=-122.1419,
-        markers=[
-          {
-             'icon': 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
-             'lat': 37.4419,
-             'lng': -122.1419,
-             'infobox': "<b>Hello World</b>"
-          },
-          {
-             'icon': 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-             'lat': 37.4300,
-             'lng': -122.1400,
-             'infobox': "<b>Hello World from other place</b>"
-          }
-        ]
-        )
+        script_url = "https://maps.googleapis.com/maps/api/js?key={}&callback=initMap".format(map_key)
 
-        return render_template('search_result.html', book_result=book_result, mymap=mymap, sndmap=sndmap)
+        return render_template('search_result.html', book_result=book_result, script_url=script_url)
     else:
 
         flash("Sorry, book is no find, please search again.")
 
-        return redirect("search")
+        return redirect("/search")
 
 
 ####################################################################################
