@@ -122,7 +122,7 @@ def adding_book():
 
     map_key = os.environ["book_api_key"]
 
-    payload = {"q": "isbn:{}".format(user_isbn), "key": map_key}
+    payload = {"q": "isbn: {}".format(user_isbn), "key": map_key}
 
     print(payload)
 
@@ -130,17 +130,6 @@ def adding_book():
 
     book_info = response.json()
 
-    # if book_info["totalItems"] >= 1: # pragma: no cover
-    #     title_list = book_info["items"][0]["volumeInfo"]["title"]
-    #     author_list = book_info["items"][0]["volumeInfo"]["authors"]
-    #     cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
-
-    # elif book_info["totalItems"] < 1: # pragma: no cover
-    #     #library.link requires isbn-13, so convert book.isbn to isbn-13
-    #     isbn13 = convert_isbn(user_isbn)
-
-    
-    # Loop through the json file to get title, author and image.
     
 
     title = []
@@ -150,55 +139,42 @@ def adding_book():
     for key in book_info.keys():
 
         
-        if book_info["totalItems"] >= 1: # pragma: no cover
-            title_list = book_info["items"][0]["volumeInfo"]["title"]
-            author_list = book_info["items"][0]["volumeInfo"]["authors"]
-            cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
+        if book_info["totalItems"] >= 1: 
 
-        elif book_info["totalItems"] < 1: # pragma: no cover
+            book_details = book_info["items"][0]["volumeInfo"]
+
+            if 'title' not in book_details:
+                title_list = "No Title"
+            else:
+                title_list = book_info["items"][0]["volumeInfo"]["title"]
+            title.append(title_list)
+            # author_list = book_info["items"][0]["volumeInfo"]["authors"]
+            if 'authors' not in book_details:
+                author_list = book_info["items"][0]["volumeInfo"]["publisher"]
+            else:
+                 author_list = book_info["items"][0]["volumeInfo"]["authors"]
+            author.append(author_list)
+
+            print(author_list)
+
+            if 'imageLinks' not in book_details:
+                cover_url_list = "https://web.northamptoncounty.org/Corrections/images/No_image_available.png"
+            else:
+                cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
+            cover_url.append(cover_url_list)
+
+
+
+        elif book_info["totalItems"] < 1: 
         #library.link requires isbn-13, so convert book.isbn to isbn-13
             isbn13 = convert_isbn(user_isbn)
 
+           
             print(isbn13)
-
-    
-
-        # if 'title' not in book_details:
-        
-        #     return redirect("/search")
-#         # else:
-#         title_list = book_info["items"][0]["volumeInfo"]["title"]
-#         title.append(title_list)
-
-
-#         # if 'authors' not in book_details:
-#         #     author_list = book_info["items"][0]["volumeInfo"]["publisher"]
-#         # else:
-#         author_list = book_info["items"][0]["volumeInfo"]["authors"]
-#         author.append(author_list)
-
-# ##############################################################
-#         # book_details = book_info["items"][0]["volumeInfo"]
-#         # if 'imageLinks' not in book_details:
-
-#         #     cover_url_list = "https://web.northamptoncounty.org/Corrections/images/No_image_available.png"
-#         # else:
-#         cover_url_list = book_info["items"][0]["volumeInfo"]["imageLinks"]
-  
-#         cover_url.append(cover_url_list)
-        title_list = book_info["items"][0]["volumeInfo"]["title"]
-        title.append(title_list)
-
-        author_list = book_info["items"][0]["volumeInfo"]["authors"]
-        author.append(author_list)
-
-        cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
-        cover_url.append(cover_url_list)
-  
 
 
     #first title is param
-    book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=isbn13, user_id=session['user_id'])
+    book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, user_id=session['user_id'])
 
     user = User.query.get(session['user_id'])
 
