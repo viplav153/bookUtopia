@@ -22,7 +22,13 @@ app.jinja_env.undefined = StrictUndefined
 @app.route("/")
 def index():
     """Homepage"""
-    return render_template("homepage.html")
+
+    if session:
+
+        return redirect("/home")
+    else:
+
+        return render_template("homepage.html")
 
 
 ######################################################################
@@ -97,11 +103,14 @@ def logout():
 @app.route("/home")
 def book_home():
 
+    
+        
+
     if session:
         user = User.query.get(session['user_id'])
         name = user.user_name
 
-        books = Book.query.all()
+        books = Book.query.filter(Book.book_availability == True, Book.user_id != session['user_id']).all()
 
         return render_template("home.html", books=books,name=name)
 
@@ -169,14 +178,12 @@ def adding_book():
         #library.link requires isbn-13, so convert book.isbn to isbn-13
             isbn13 = convert_isbn(user_isbn)
 
-           
-            print(isbn13)
-
-
     #first title is param
-    book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, user_id=session['user_id'])
+    book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, book_availability=True, user_id=session['user_id'])
 
     user = User.query.get(session['user_id'])
+
+
 
     db.session.add(book)
     db.session.commit()
@@ -284,11 +291,16 @@ def search_func():
             user = zipcode_result[0]
             book_result = Book.query.filter(Book.user_id == user.user_id).all()
 
-            
+     
     
 
     if book_result:
+
+        for book in book_result:
+            # user = User.query.get(session['user_id'])
+            book = Book.query.filter(Book.book_availability == False).all()
         
+            book.append(book_result)
         flash("We have the book!")
 
         script_url = "https://maps.googleapis.com/maps/api/js?key={}&callback=initMap".format(map_key)
@@ -373,6 +385,41 @@ def book_list():
     return render_template("book_list.html", books=books)
 
 
+###################################################################################
+@app.route("/update", methods=["POST"])
+def update_book():
+
+    book_id = request.form.get("book_id")
+
+    book = Book.query.filter(Book.book_id == book_id).first()
+
+    # print(book)
+
+
+    availability = request.form.get("radAnswer")
+    if availability == "available":
+        book.book_availability = True
+    else:
+        book.book_availability = False
+        
+    # book.book_availability = availability
+    # book.book_availability = True
+
+    book.book_note = request.form.get("message")
+    # book.book_note = note
+    # print(book.book_note)
+  
+
+    
+    # note = request.form.get("message")
+    # book.book_note = note
+
+    # db.session.add()
+    # db.session.add(book_note)
+   
+    db.session.commit()
+
+    return redirect("/book_list")
 #######################################################################################
 
 if __name__ == "__main__":

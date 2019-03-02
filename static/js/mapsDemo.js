@@ -7,49 +7,52 @@
  * Clicking on a marker will open an information window.
  */
 function initMap() {
-  const sfBayCoords = { lat: 37.601773, lng: -122.202870 };
-
-  const map = new google.maps.Map(document.getElementById('map'), {
-    center: sfBayCoords,
+  var map = new google.maps.Map(document.getElementById('map'), {
     zoom: 8
+    center: {lat: -34.397, lng: 150.644}
   });
 
-  const sfMarker = addMarker('static/imgs/marker.png', sfBayCoords, 'SF Bay', map);
-  sfMarker.addListener('click', () => alert('Hi!'));
+  var geocoder = new google.maps.Geocoder():
 
-  const hackbrightLocations = [
-    {
-      name: 'San Francisco',
-      coords: { lat: 37.7887501, lng: -122.4137792 }
-    },
-    {
-      name: 'South Bay',
-      coords: { lat: 37.3797848, lng: -121.9432011 }
-    },
-    {
-      name: 'East Bay',
-      coords: { lat: 37.8028806, lng: -122.2691348 }
-    },
-  ];
+  document.getElementById('submit').addEventListener('click', function() {
+    geocoderAddress(geocoder, map)；
+  })；
 
-  // Loop over hackbrightLocations to make lots of markers
-  const markers = [];
-  for (let hbLocation of hackbrightLocations) {
-    markers.push(addMarker('static/imgs/marker.png', hbLocation.coords, hbLocation.name, map));
-  }
 
-  // Loop over markers list to attach click handlers
-  for (let marker of markers) {
-    const aboutLocation = `<h1>Hackbright - ${marker.title}</h1>
-      <p>Located at</p>
-      <ul>
-        <li><b>Lat:</b> ${marker.position.lat()}</li>
-        <li><b>Lng:</b> ${marker.position.lng()}</li>
-      </ul>
-      `;
+ function geocodeAddress(geocoder, resultsMap) {
+        var address = document.getElementById('address').value;
+        geocoder.geocode({'address': address}, function(results, status) {
+          if (status === 'OK') {
+            resultsMap.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+              map: resultsMap,
+              position: results[0].geometry.location
+            });
+          } else {
+            alert('Geocode was not successful for the following reason: ' + status);
+          }
+        });
+      }
 
-    addInfoWindowToMarker(aboutLocation, marker, map);
-  }
+
+
+  // const markers = [];
+  // for (let hbLocation of hackbrightLocations) {
+  //   markers.push(addMarker('static/imgs/marker.png', hbLocation.coords, hbLocation.name, map));
+  // }
+
+  // // Loop over markers list to attach click handlers
+  // for (let marker of markers) {
+  //   const aboutLocation = `<h1>Hackbright - ${marker.title}</h1>
+  //     <p>Located at</p>
+  //     <ul>
+  //       <li><b>Lat:</b> ${marker.position.lat()}</li>
+  //       <li><b>Lng:</b> ${marker.position.lng()}</li>
+  //     </ul>
+  //     `;
+
+  //   addInfoWindowToMarker(aboutLocation, marker, map);
+  // }
 
   // Un-comment this to execute code in moreDemos.js
   // initMoreDemos(map);
@@ -57,21 +60,21 @@ function initMap() {
 
 
 /**
- * Utility/helper functions
- */
+//  * Utility/helper functions
+//  */
 
-function addMarker(icon, position, title, map) {
-  const marker = new google.maps.Marker({ position, map, title, icon });
+// function addMarker(icon, position, title, map) {
+//   const marker = new google.maps.Marker({ position, map, title, icon });
 
-  return marker;
-}
+//   return marker;
+// }
 
-function addInfoWindowToMarker(content, marker, map) {
-  const infoWindow = new google.maps.InfoWindow({
-    content,
-    maxWidth: 200
-  });
+// function addInfoWindowToMarker(content, marker, map) {
+//   const infoWindow = new google.maps.InfoWindow({
+//     content,
+//     maxWidth: 200
+//   });
 
-  marker.addListener('click', () => infoWindow.open(map, marker));
-}
+//   marker.addListener('click', () => infoWindow.open(map, marker));
+// }
 

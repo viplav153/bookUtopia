@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-
+<link rel="stylesheet" href="/static/style.css">
 <div>
 
     <ul>
@@ -16,7 +16,62 @@
 
 
 
-        <button type="button">Update</button>
+       <button onclick="document.getElementById('id01').style.display='block'">Update</button>
+
+
+
+        <!-- The Modal -->
+        <div id="id01" class="modal">
+         <!-- -->
+
+          <!-- Modal Content -->
+          <form class="modal-content animate" action="/update", method="POST">
+
+            <input type="hidden" name="book_id" value="{{ item.book_id }}"">
+
+            <div class="container">
+
+                <label> Availability: </label>
+                
+
+                <input type="radio" name="radAnswer" value="available"> Available<br>
+                <input type="radio" name="radAnswer" value="unavailable">Unavailable<br>
+                <!-- 
+                <input type="radio" name="choice" value=1>Available<br>
+                <input type="radio" name="choice" value="false">Unavailable<br> -->
+
+
+               <label> Note: </label>
+               <textarea id="subject" name="message" placeholder="Write something to the Owner.." style="height:100px"></textarea>
+
+               <input type="submit" value="Submit">
+            </div>
+
+            <div class="container" style="background-color:#f1f1f1">
+              <button type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">Cancel</button>
+            </div>
+          </form>
+
+
+        </div>
+
+
+        <script>
+            // Get the modal
+            
+                // Get the modal
+                var modal = document.getElementById('id01');
+
+                // When the user clicks anywhere outside of the modal, close it
+                window.onclick = function(event) {
+                  if (event.target == modal) {
+                    modal.style.display = "none";
+                  }
+                }
+                    
+
+        </script>
+
 
 
         <form action="/delete" method="POST">

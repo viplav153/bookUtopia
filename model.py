@@ -48,11 +48,12 @@ class Book(db.Model):
    
 
     book_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    author = db.Column(db.String(80), nullable=False)
-    ISBN  =  db.Column(db.String(50), nullable=False)
-    book_cover = db.Column(db.String(1000), nullable=False)
-    # availability = db.Column(db.Boolean, nullable=True)
+    title = db.Column(db.String(100), nullable=True)
+    author = db.Column(db.String(80), nullable=True)
+    ISBN  =  db.Column(db.String(50), nullable=True)
+    book_cover = db.Column(db.String(1000), nullable=True)
+    book_availability = db.Column(db.Boolean, nullable=True)
+    book_note = db.Column(db.String(1000), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     
     #Connection with the User table, should I use "user insstead of users？"
@@ -65,11 +66,6 @@ class Book(db.Model):
 
         return ('Book book_id={}, title={}, author={}'.format(self.book_id,self.title, self.author))
 
-    # def add_book(self):
-    #     if add_book added, 
-    #      the availability is True
-    #     else:
-    #         availability is False
 
 
 
