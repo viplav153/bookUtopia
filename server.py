@@ -8,6 +8,7 @@ from pyisbn import convert as convert_isbn
 from sqlalchemy import func
 from twilio.rest import Client
 import requests
+import bcrypt
 import os 
 
 
@@ -22,15 +23,12 @@ app.jinja_env.undefined = StrictUndefined
 @app.route("/")
 def index():
     """Homepage"""
-
     if session:
-
-        return redirect("/home")
+        return redirect('/home/{}'.format(session['user_id']))
     else:
-
         return render_template("homepage.html")
-
-
+    
+    
 ######################################################################
 @app.route("/register", methods=["GET"])
 def register_form():
@@ -53,6 +51,7 @@ def register_process():
 
     db.session.add(new_user)
     db.session.commit()
+
     
     flash(f"You successfully registed {name} .")
     return render_template("homepage.html", name=name)
@@ -62,6 +61,8 @@ def register_process():
 @app.route("/login", methods=['GET'])
 def login_form():
     """User login form"""
+
+
 
     return render_template("login.html")
 
@@ -83,7 +84,7 @@ def logged_in():
         session['user_id'] = query.user_id 
         flash("You are successfully logged in.")
 
-        return redirect('/home')
+        return redirect('/home/{}'.format(session['user_id']))
 
     else:
         return redirect('/login')
@@ -100,11 +101,8 @@ def logout():
 
 ###################################################################################Login User homepage
 
-@app.route("/home")
-def book_home():
-
-    
-        
+@app.route("/home/<int:user_id>")
+def book_home(user_id):
 
     if session:
         user = User.query.get(session['user_id'])
@@ -113,6 +111,7 @@ def book_home():
         books = Book.query.filter(Book.book_availability == True, Book.user_id != session['user_id']).all()
 
         return render_template("home.html", books=books,name=name)
+
 
 ####################################################################################Add function
 
@@ -188,7 +187,6 @@ def adding_book():
     db.session.add(book)
     db.session.commit()
 
-    #Book.availability == True.
     
     return redirect('/book_list')
 
@@ -196,8 +194,7 @@ def adding_book():
 #####################################################################################Search funtion:
 @app.route("/search", methods=['GET'])
 def search_form():
-
-
+        
     choices = ['Keyword', 'Title', 'Author', 'Zipcode']
  
     return render_template("search.html", choices=choices)
@@ -207,6 +204,7 @@ def search_form():
 @app.route("/search", methods=['POST'])
 def search_func():
 
+   
 
     search_type = request.form.get('choice')
     search_terms = request.form.get('search')
@@ -290,27 +288,34 @@ def search_func():
             zipcode_result = User.query.filter(User.zipcode == search_terms).all()
             user = zipcode_result[0]
             book_result = Book.query.filter(Book.user_id == user.user_id).all()
-
-     
-    
+            #make sure zipcode is empty in session, delete existing zipcode
+            #save zipcode in session   
+        
 
     if book_result:
+
+       
 
         for book in book_result:
             # user = User.query.get(session['user_id'])
             book = Book.query.filter(Book.book_availability == False).all()
         
             book.append(book_result)
+
         flash("We have the book!")
 
         script_url = "https://maps.googleapis.com/maps/api/js?key={}&callback=initMap".format(map_key)
 
         return render_template('search_result.html', book_result=book_result, script_url=script_url)
+
+
     else:
 
         flash("Sorry, book is no find, please search again.")
 
-        return redirect("/search")
+        return redirect('/search')
+
+        # 
 
 
 ####################################################################################
@@ -320,7 +325,7 @@ def search_func():
 def request_book():
 
     user_request = request.form.get('book_id')
-
+    
 
     if user_request:
         account_sid = os.environ["twilio_sid"]
@@ -355,7 +360,7 @@ def request_book():
         flash('Your request had sent!')
 
 
-    return redirect("/home")
+    return redirect('/home/{}'.format(session['user_id']))
 
 
 #####################################################################################
@@ -419,7 +424,7 @@ def update_book():
    
     db.session.commit()
 
-    return redirect("/book_list")
+    return redirect('/book_list')
 #######################################################################################
 
 if __name__ == "__main__":
