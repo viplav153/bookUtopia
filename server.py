@@ -286,15 +286,24 @@ def search_func():
             return redirect("/search")
         else:
             zipcode_result = User.query.filter(User.zipcode == search_terms).all()
+            print(search_terms)
+            print(zipcode_result)
+
+            for user in zipcode_result:
+                print(user.books) #store this info in a data, right now this is 
+                #multiple lists of the books of every user in a particular zipcode
+
             user = zipcode_result[0]
             book_result = Book.query.filter(Book.user_id == user.user_id).all()
             #make sure zipcode is empty in session, delete existing zipcode
             #save zipcode in session   
         
+        # user_books = Book.query.get(session['user_id']).all()
+        # print(user_books)
+
+
 
     if book_result:
-
-       
 
         for book in book_result:
             # user = User.query.get(session['user_id'])
@@ -316,8 +325,6 @@ def search_func():
         return redirect('/search')
 
         # 
-
-
 ####################################################################################
 #twilio SMS message 
 
