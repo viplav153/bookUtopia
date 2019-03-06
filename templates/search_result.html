@@ -4,6 +4,36 @@
 
 
 <link rel="stylesheet" href="/static/style.css">
+<!-- <title>Geocoding Service</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8"> -->
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;ß
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+    </style>
+  </head>
 <div>
     
      
@@ -54,6 +84,8 @@
 
 
         <script>
+          //make test AJAX request, console.log book results
+          // make static div with the information with one book
             // Get the modal
             
                 // Get the modal
@@ -78,29 +110,11 @@
         
 
  </div>      
-        <div id="map"></div>
-
-      
-
-        <!-- defer & async
-
-          async
-          - Don't wait for me, go ahead and read the rest of the doc while I load
-          - When I finish loading:
-            - Pause reading HTML
-            - Execute the code
-          * This allows the rest of your page to appear while JS loads
 
 
-          defer
-          - Finish reading all HTML
-          - Then execute my code
-          * This guarantees that scripts will execute in the order they appear
-        -->
-        
-        <script src="static/js/mapsDemo.js"></script>
-        <script async defer  src={{script_url}}></script>
-     
- 
 
-{% endblock %} 
+  <div id="map"></div>
+  
+
+  <script async defer src={{map_api}}></script>
+ {% endblock %}
