@@ -23,11 +23,10 @@ app.jinja_env.undefined = StrictUndefined
 @app.route("/")
 def index():
     """Homepage"""
-    if session:
-        return redirect('/home/{}'.format(session['user_id']))
-    else:
-        return render_template("homepage.html")
-    
+    # if session:
+    #     return redirect('/home/{}'.format(session['user_id']))
+    # else:
+    return render_template("homepage.html")
     
 ######################################################################
 @app.route("/register", methods=["GET"])
@@ -65,7 +64,6 @@ def login_form():
 
 
     return render_template("login.html")
-
 
 
 @app.route("/login", methods=['POST'])
@@ -286,36 +284,31 @@ def search_func():
             return redirect("/search")
         else:
             zipcode_result = User.query.filter(User.zipcode == search_terms).all()
-            print(search_terms)
-            print(zipcode_result)
 
             for user in zipcode_result:
-                print(user.books) #store this info in a data, right now this is 
-                #multiple lists of the books of every user in a particular zipcode
 
-            user = zipcode_result[0]
+                print(user.books)
+
             book_result = Book.query.filter(Book.user_id == user.user_id).all()
-            #make sure zipcode is empty in session, delete existing zipcode
-            #save zipcode in session   
-        
-        # user_books = Book.query.get(session['user_id']).all()
-        # print(user_books)
-
-
+          
+    #Filter out the available books from search results, serialize each book to a dictionary, then append in available[].
+    available_books = []
 
     if book_result:
-
         for book in book_result:
-            # user = User.query.get(session['user_id'])
-            book = Book.query.filter(Book.book_availability == False).all()
-        
-            book.append(book_result)
+            if book.book_availability == True:
+                book = book.serialize()
+                print(book)
+                available_books.append(book)
 
         flash("We have the book!")
 
         script_url = "https://maps.googleapis.com/maps/api/js?key={}&callback=initMap".format(map_key)
 
-        return render_template('search_result.html', book_result=book_result, script_url=script_url)
+        #Convert the available_book list to a dictionary to pass to the HTML, it will be abole to convert to Json file.
+        results = {"results": available_books}
+
+        return render_template('search_result.html', results=results, script_url=script_url)
 
 
     else:
@@ -324,7 +317,7 @@ def search_func():
 
         return redirect('/search')
 
-        # 
+         
 ####################################################################################
 #twilio SMS message 
 

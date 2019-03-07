@@ -1,120 +1,117 @@
+ 
 
 {% extends 'base.html' %}
 {% block content %}
 
 
-<link rel="stylesheet" href="/static/style.css">
-<!-- <title>Geocoding Service</title>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    <meta charset="utf-8"> -->
-    <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
-      #map {
-        height: 100%;
-      }
-      /* Optional: Makes the sample page fill the window. */
-      html, body {
-        height: 100%;
-        margin: 0;ß
-        padding: 0;
-      }
-      #floating-panel {
-        position: absolute;
-        top: 10px;
-        left: 25%;
-        z-index: 5;
-        background-color: #fff;
-        padding: 5px;
-        border: 1px solid #999;
-        text-align: center;
-        font-family: 'Roboto','sans-serif';
-        line-height: 30px;
-        padding-left: 10px;
-      }
-    </style>
-  </head>
+<!-- <link rel="stylesheet" href="/static/style.css"> -->
 <div>
     
      
-    {% for item in book_result %}
+    {% for item in results["results"] %}
    
     <p><img src="{{item.book_cover}}" /></p>
     <p>Title:<i>{{ item.title }}</i></p>
     <p>Author: {{ item.author[2:-2] }}</p>
     <p>ISBN: {{ item.ISBN }}</p>
-     <button onclick="document.getElementById('id01').style.display='block'">Request Book</button>
+
+    {% endfor %}
+
+</div>
+
+<style type="text/css">
+  html, body { height: 100%; margin: 0; padding: 0; }
+  #map { height: 100%; }
+</style>
+
+<body>
+<div id="map"></div>
+
+<script type="text/javascript">
+  const books = {{ results | tojson }};
+  console.log(books.results[0].zipcode);
+  function initMap() {
+  const sfBayCoords = { lat: 37.601773, lng: -122.202870 };
+
+  const map = new google.maps.Map(document.getElementById('map'), {
+    center: sfBayCoords,
+    zoom: 8
+  });
+
+  const sfMarker = addMarker('static/imgs/marker.png', sfBayCoords, 'SF Bay', map);
+  sfMarker.addListener('click', () => alert('Hello!'));
 
 
+  // Loop over hackbrightLocations to make lots of markers
+  const markers = [];
+  for (let book of books.results) {
+    console.log(book)
+    
+    // markers.push(addMarker('static/imgs/marker.png', hbLocation.coords, hbLocation.name, map));
+  }
 
-        <!-- The Modal -->
-        <div id="id01" class="modal">
-         <!-- -->
+  // Loop over markers list to attach click handlers
+  for (let marker of markers) {
+    const aboutLocation = `<h1>BookLot - ${marker.title}</h1>
+      <p>Located at</p>
+      <ul>
+        <li><b>Lat:</b> ${marker.position.lat()}</li>
+        <li><b>Lng:</b> ${marker.position.lng()}</li>
+      </ul>
+      `;
 
-          <!-- Modal Content -->
-          <form class="modal-content animate" action="/request", method="POST">
+    addInfoWindowToMarker(aboutLocation, marker, map);
+  }
 
-            <input type="text" name="book_id" value="{{ item.book_id }}"">
-
-            <div class="container">
-              <label>Subject</label>
-              <input type="text" id="lname" name="subject" placeholder="Please Enter Subject">
-
-              
-               <label>Duration </label>
-                <select id="country" name="durantion">
-                  <option value="1 week">1 week </option>
-                  <option value="1 month">1 month </option>
-                  <option value="2 month">2 month</option>
-                </select>
-
-               <label> Message: </label>
-               <textarea id="subject" name="message" placeholder="Write something to the Owner.." style="height:200px"></textarea>
-
-               <input type="submit" value="Submit">
-            </div>
-
-            <div class="container" style="background-color:#f1f1f1">
-              <button type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">Cancel</button>
-            </div>
-          </form>
+  // Un-comment this to execute code in moreDemos.js
+  // initMoreDemosmap);
+}
 
 
-        </div>
+/**
+ * Utility/helper functions
+ */
+
+function addMarker(icon, position, title, map) {
+  const marker = new google.maps.Marker({ position, map, title, icon });
+
+  return marker;
+}
+
+function addInfoWindowToMarker(content, marker, map) {
+  const infoWindow = new google.maps.InfoWindow({
+    content,
+    maxWidth: 200
+  });
+
+  marker.addListener('click', () => infoWindow.open(map, marker));
+}
+
+</script>
+
+<!-- defer & async
+
+  async
+  - Don't wait for me, go ahead and read the rest of the doc while I load
+  - When I finish loading:
+    - Pause reading HTML
+    - Execute the code
+  * This allows the rest of your page to appear while JS loads
 
 
-        <script>
-          //make test AJAX request, console.log book results
-          // make static div with the information with one book
-            // Get the modal
-            
-                // Get the modal
-                var modal = document.getElementById('id01');
+  defer
+  - Finish reading all HTML
+  - Then execute my code
+  * This guarantees that scripts will execute in the order they appear
+-->
+<!-- <script src="static/js/mapsDemo.js"></script> -->
+<!-- <script src="static/js/moreDemos.js"></script> -->
+<script async defer
+  src={{script_url}}>
+</script>
+</body>
 
-                // When the user clicks anywhere outside of the modal, close it
-                window.onclick = function(event) {
-                  if (event.target == modal) {
-                    modal.style.display = "none";
-                  }
-                }
 
-        </script>
-
-        {% endfor %}
-       
         
-        <style type="text/css">
-          html, body { height: 100%; margin: 0; padding: 0; }
-          #map { height: 100%; }
-        </style>
-        
+{% endblock %} 
 
- </div>      
-
-
-
-  <div id="map"></div>
-  
-
-  <script async defer src={{map_api}}></script>
- {% endblock %}
