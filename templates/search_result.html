@@ -1,5 +1,7 @@
 
     
+
+    
 {% extends 'base.html' %}
 {% block content %}
 
@@ -29,110 +31,80 @@
 
 <script type="text/javascript">
   const books = ({{ results | tojson }});
-  zipcode = books.results[0].zipcode.toString();
-
-
-
-
+  books_lis = books.results;
+  let markers = [];
+  // console.log(zipcode);
 
   function initMap() {
    // var getLatLngByZipcode = function(zipcode) {
-
     
     var geocoder = new google.maps.Geocoder();
-    // var address = {zipcode};
-    geocoder.geocode({ 'address': zipcode }, function (results, status) {
-        console.log('status:');
-        console.log(status);
-        if (status === google.maps.GeocoderStatus.OK) {
-          console.log('status is ok');
-
-
-            var latitude = results[0].geometry.location.lat();
-            var longitude = results[0].geometry.location.lng();
-            const sfBayCoords = { lat: latitude , lng: longitude };
-            const map = new google.maps.Map(document.getElementById('map'), {
-              center: sfBayCoords,
-              zoom: 8
-            });
-            const sfMarker = addMarker('static/imgs/marker.png', sfBayCoords, 'SF Bay', map);
-            sfMarker.addListener('click', () => alert('Hello!'));
-              // Loop over hackbrightLocations to make lots of markers
-            const markers = [];
-            books.results.forEach(book => {
-              console.log('book');
-              console.log(book);
-
-              book.coords = {lat : latitude, lng: longitude}
-
-              markers.push(addMarker('static/imgs/marker.png', book.coords , book.title, map));
-            })
-            console.log('books.results');
-            console.log(books.results);
-            for (let book of books.results) {
-              console.log('book');
-              console.log(book)
-                
-            }
-              // Loop over markers list to attach click handlers
-            for (let marker of markers) {
-              const aboutLocation = `<h1>BookLot - ${books.results[0].title}</h1>
-                  <p>Located at</p>
-                  <ul>
-                    <li><b>Lat:</b> ${marker.position.lat()}</li>
-                    <li><b>Lng:</b> ${marker.position.lng()}</li>
-                  </ul>
-                  `;
-              addInfoWindowToMarker(aboutLocation, marker, map);
-            }
-          alert ("Latitude: " + latitude + "\nLongitude: " + longitude);
-            
-        } else {
-            alert("Request failed.")
-        }
+    const sfBayCoords = { lat: 37.601773, lng: -122.202870 };
+    const map = new google.maps.Map(document.getElementById('map'), {
+      center: sfBayCoords,
+      zoom: 8
     });
-  //};
-  // console.log("getLatLngByZipcode")
-  // console.log(getLatLngByZipcode("Sydney, NSW"))
+    // var address = {zipcode};
+    books_lis.forEach(book => {
+      geocoder.geocode({ 'address': book.zipcode.toString() }, function (results, status) {
+          console.log('status:');
+          console.log(status);
+          if (status === google.maps.GeocoderStatus.OK) {
+            console.log('status is ok');
+              var latitude = results[0].geometry.location.lat();
+              var longitude = results[0].geometry.location.lng();
+              // const sfBayCoords = { lat: latitude , lng: longitude } 
+            }
+              // const sfMarker = addMarker('static/imgs/marker.png', sfBayCoords, 'SF Bay', map);
+              // sfMarker.addListener('click', () => alert('Hello!'));
+                // Loop over hackbrightLocations to make lots of markers
+              // books.results.forEach(book => {
+                // console.log('book');
+                // console.log(book);
+                book.coords = {lat : latitude, lng: longitude}
+                // console.log(book.title);
+                // console.log(book.coords);
+                markers.push(addMarker('static/imgs/marker.png', book.coords , book.title, map));
+          }
+              // )
+              // console.log('books.results');
+              // console.log(books.results);
+              // for (let book of books.results) {
+                // console.log('book');
+                // console.log(book)
+                  
+              // }
+                // Loop over markers list to attach click handlers
+          //   alert ("Latitude: " + latitude + "\nLongitude: " + longitude);
+              
+          // else {
+          //     alert("Request failed.")
+          // }
+        );
+  });
 
-  // console.log('lat:');
-  // console.log(latitude);
-  // console.log('long:');
-  // console.log('longitude');
-  // const sfBayCoords = { lat: latitude , lng: longitude };
-  // const map = new google.maps.Map(document.getElementById('map'), {
-  //   center: sfBayCoords,
-  //   zoom: 8
-  // });
-  // const sfMarker = addMarker('static/imgs/marker.png', sfBayCoords, 'SF Bay', map);
-  // sfMarker.addListener('click', () => alert('Hello!'));
-  // Loop over hackbrightLocations to make lots of markers
-  // const markers = [];
-  // for (let book of books.results) {
-  //   console.log(book)
-    
-    // markers.push(addMarker('static/imgs/marker.png', hbLocation.coords, hbLocation.name, map));
-  // }
-  // Loop over markers list to attach click handlers
-  // for (let marker of markers) {
-  //   const aboutLocation = `<h1>BookLot - ${books.results[0].title}</h1>
-  //     <p>Located at</p>
-  //     <ul>
-  //       <li><b>Lat:</b> ${marker.position.lat()}</li>
-  //       <li><b>Lng:</b> ${marker.position.lng()}</li>
-  //     </ul>
-  //     `;
-  //   addInfoWindowToMarker(aboutLocation, marker, map);
-  // }
-  //getLatLngByZipcode(zipcode);
+  for (let marker of markers) {
+    const aboutLocation = `<h1>BookLot - ${marker.title}</h1>
+        <p>Located at</p>
+        <ul>
+          <li><b>Lat:</b> ${marker.position.lat()}</li>
+          <li><b>Lng:</b> ${marker.position.lng()}</li>
+        </ul>
+        `;
+    addInfoWindowToMarker(aboutLocation, marker, map);
+  }
 }
+
+
 /**
  * Utility/helper functions
  */
 function addMarker(icon, position, title, map) {
+  console.log(title);
   const marker = new google.maps.Marker({ position, map, title, icon });
   return marker;
 }
+
 function addInfoWindowToMarker(content, marker, map) {
   console.log('in 124');
   const infoWindow = new google.maps.InfoWindow({
@@ -150,5 +122,6 @@ function addInfoWindowToMarker(content, marker, map) {
 
         
 {% endblock %} 
+
 
 
