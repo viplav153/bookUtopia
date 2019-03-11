@@ -1,43 +1,40 @@
 
-    
-
-    
 {% extends 'base.html' %}
 {% block content %}
 
-
-<!-- <link rel="stylesheet" href="/static/style.css"> -->
 <div>
-    
-     
-    {% for item in results["results"] %}
-   
-    <p><img src="{{item.book_cover}}" /></p>
-    <p>Title:<i>{{ item.title }}</i></p>
-    <p>Author: {{ item.author[2:-2] }}</p>
-    <p>ISBN: {{ item.ISBN }}</p>
 
-    {% endfor %}
+
+  {% for item in results["results"] %}
+
+  <p><img src="{{item.book_cover}}" /></p>
+  <p>Title:<i>{{ item.title }}</i></p>
+  <p>Author: {{ item.author[2:-2] }}</p>
+  <p>ISBN: {{ item.ISBN }}</p>
+
+  {% endfor %}
 
 </div>
 
-<style type="text/css">
+  <style type="text/css">
   html, body { height: 100%; margin: 0; padding: 0; }
   #map { height: 100%; }
-</style>
+  </style>
 
 <body>
-<div id="map"></div>
+  <div id="map"></div>
 
-<script type="text/javascript">
-  const books = ({{ results | tojson }});
-  books_lis = books.results;
-  let markers = [];
-  // console.log(zipcode);
+  <script type="text/javascript">
+    const books = ({{ results | tojson }});
+    let booksLis = books.results;
+    console.log('booksList');
+    console.log(booksLis)
+    let markers = [];
 
   function initMap() {
-   // var getLatLngByZipcode = function(zipcode) {
-    
+ 
+    var latitude=""
+    var longitude=""
     var geocoder = new google.maps.Geocoder();
     const sfBayCoords = { lat: 37.601773, lng: -122.202870 };
     const map = new google.maps.Map(document.getElementById('map'), {
@@ -45,82 +42,106 @@
       zoom: 8
     });
     // var address = {zipcode};
-    books_lis.forEach(book => {
-      geocoder.geocode({ 'address': book.zipcode.toString() }, function (results, status) {
-          console.log('status:');
-          console.log(status);
-          if (status === google.maps.GeocoderStatus.OK) {
-            console.log('status is ok');
-              var latitude = results[0].geometry.location.lat();
-              var longitude = results[0].geometry.location.lng();
-              // const sfBayCoords = { lat: latitude , lng: longitude } 
-            }
-              // const sfMarker = addMarker('static/imgs/marker.png', sfBayCoords, 'SF Bay', map);
-              // sfMarker.addListener('click', () => alert('Hello!'));
-                // Loop over hackbrightLocations to make lots of markers
-              // books.results.forEach(book => {
-                // console.log('book');
-                // console.log(book);
-                book.coords = {lat : latitude, lng: longitude}
-                // console.log(book.title);
-                // console.log(book.coords);
-                markers.push(addMarker('static/imgs/marker.png', book.coords , book.title, map));
-          }
-              // )
-              // console.log('books.results');
-              // console.log(books.results);
-              // for (let book of books.results) {
-                // console.log('book');
-                // console.log(book)
-                  
-              // }
-                // Loop over markers list to attach click handlers
-          //   alert ("Latitude: " + latitude + "\nLongitude: " + longitude);
-              
-          // else {
-          //     alert("Request failed.")
-          // }
-        );
-  });
+    booksLis.forEach(book => {
+          geocoder.geocode({ 'address': book.zipcode.toString() }, function (results, status) {
 
-  for (let marker of markers) {
-    const aboutLocation = `<h1>BookLot - ${marker.title}</h1>
-        <p>Located at</p>
-        <ul>
-          <li><b>Lat:</b> ${marker.position.lat()}</li>
-          <li><b>Lng:</b> ${marker.position.lng()}</li>
-        </ul>
-        `;
-    addInfoWindowToMarker(aboutLocation, marker, map);
+            if (status === google.maps.GeocoderStatus.OK) {
+                latitude = results[0].geometry.location.lat();
+                longitude = results[0].geometry.location.lng();
+                }
+                 
+                book.coords = {lat : latitude, lng: longitude}
+                
+                console.log(book.coords);
+                let newMarker = addMarker('static/imgs/marker.png', book.coords , book.title, map);
+
+                const html = `
+     <div style="width:250px; height:200px">
+     <div class="window-content">
+     <img src="${book.book_cover}"
+     alt="Book Cover"
+     style=width:100px; height:100
+     class="thumbnail">
+     <p>
+     <b>Book Title: </b>${book.title}
+     </p>
+     <p>
+     <b>Book Author: </b>${book.author}
+     </p>
+     </div>
+     </div>
+     `;  
+
+                var infoWindow = new google.maps.InfoWindow({
+                  content: html
+                });
+                bindInfoWindow(newMarker, map, infoWindow);
+
+          }
+          
+          );
+    });
+    
+    /*
+    console.log('Maker lenghth')
+    console.log(markers.length)
+    markers.forEach(marker => {
+      console.log('marker - line 63');
+     const html = `
+     <div style="width:250px; height:200px">
+     <div class="window-content">
+     <img src="${book.book_cover}"
+     alt="Book Cover"
+     style=width:100px; height:100
+     class="thumbnail">
+     <p>
+     <b>Book Title: </b>${book.title}
+     </p>
+     <p>
+     <b>Book Author: </b>${book.author}
+     </p>
+     </div>
+     </div>
+     `;
+     bindInfoWindow(marker, map, infoWindow, html);
+    })
+    //*/
   }
-}
 
 
 /**
  * Utility/helper functions
  */
-function addMarker(icon, position, title, map) {
-  console.log(title);
-  const marker = new google.maps.Marker({ position, map, title, icon });
-  return marker;
-}
+ function addMarker(icon, position, title, map) {
+    // console.log(title);
+    const marker = new google.maps.Marker({ position, map, title, icon });
+    return marker;
+  }
 
-function addInfoWindowToMarker(content, marker, map) {
-  console.log('in 124');
-  const infoWindow = new google.maps.InfoWindow({
-    content,
-    maxWidth: 200
-  });
-  marker.addListener('click', () => infoWindow.open(map, marker));
-}
+
+
+
+  function bindInfoWindow(marker, map, infoWindow) {
+    console.log('in bindInfoWindow');
+    /*google.maps.event.addListener(marker, 'mouseover', function () {
+      //infoWindow.close();
+      //infoWindow.setContent(html);
+      infoWindow.open(map, marker);
+    });
+    //*/
+
+    marker.addListener('click', () => {
+      infoWindow.open(map, marker)
+    });
+    console.log('marker in 137');
+    console.log(marker);
+  }
+
 </script>
-
-
 <script async defer src={{script_url}}></script>
 </body>
 
 
-        
 {% endblock %} 
 
 
