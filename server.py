@@ -11,7 +11,7 @@ import requests
 import bcrypt
 import os 
 
-
+##############
 app = Flask(__name__)
 app.secret_key = os.environ['secret_key']
 key = os.environ["book_api_key"]
@@ -40,13 +40,16 @@ def register_form():
 def register_process():
     """getting store user_name. email and password to database"""
 
+    first_name = request.form.get("first_name")
+    last_name = request.form.get("last_name")
     name = request.form.get("user_name")
     phone = request.form.get("phone")
     email = request.form.get("email")
     password = request.form.get("password")
+    hashed = str(bcrypt.hashpw(bytes(password, 'utf-8'), bcrypt.gensalt()), 'utf-8')
     zipcode = request.form.get("zipcode")
 
-    new_user = User(user_name=name, email=email, phone_number=phone, password=password, zipcode=zipcode)
+    new_user = User(first_name=first_name, last_name=last_name, user_name=name, email=email, phone_number=phone, password=hashed, zipcode=zipcode)
 
     db.session.add(new_user)
     db.session.commit()
@@ -70,22 +73,28 @@ def login_form():
 def logged_in():
     """getting the user login name and password, check if matches with the database"""
 
-    name = request.form.get("user_name")
+    email = request.form.get("email")
     password = request.form.get("password")
   
-    query = User.query.filter(User.user_name == name, User.password == password).first()
+    query = User.query.filter(User.email == email).first()
     
-
-
     if query:
-        #seeting user_id = 1 in the session.
-        session['user_id'] = query.user_id 
-        flash("You are successfully logged in.")
 
-        return redirect('/home/{}'.format(session['user_id']))
+        if bcrypt.checkpw(password.encode('utf-8'), query.password.encode('utf-8')):
+                #seeting user_id = 1 in the session.
+                session['user_id'] = query.user_id 
+                flash("You are successfully logged in.")
 
-    else:
-        return redirect('/login')
+                return redirect('/home/{}'.format(session['user_id']))
+
+        else:
+            flash("password doesn't match")
+            return redirect('/login')
+    
+    flash("Please register ")
+    return redirect('/register')
+
+
 ################################################################################Logout
 
 @app.route("/logout", methods=['GET'])
@@ -140,6 +149,10 @@ def adding_book():
 
     title = []
     author = []
+    # description = []
+    # categories = []
+    # pagecount = []
+    # publishdate = []
     cover_url = []
 
     for key in book_info.keys():
@@ -169,14 +182,39 @@ def adding_book():
                 cover_url_list  = book_info["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]
             cover_url.append(cover_url_list)
 
+            # if 'description' not in book_details:
+            #     description_list = "No Description "
+            # else:
+            description = book_info["items"][0]["volumeInfo"]["description"]
+            # description.append(description_list)
+
+            # if 'categories' not in book_details:
+            #     categories_list = "Not Available "
+            # else:
+            # categories = book_info["items"][0]["volumeInfo"]["categories"]
+            # categories.append(categories_list)
+
+            # if 'pagecount' not in book_details:
+            #     pagecount_list = 0
+            # else:
+            pagecount = book_info["items"][0]["volumeInfo"]["pageCount"]
+            # pagecount.append(pagecount_list)
+
+            # if 'publishdate' not in book_details:
+            #     publishdate_list = "Not Available "
+            # else:
+            maincategory = book_info["items"][0]["volumeInfo"]["categories"][0]
+            publishdate = book_info["items"][0]["volumeInfo"]["publishedDate"]
+            # publishdate.append(publishdate_list)
+
 
 
         elif book_info["totalItems"] < 1: 
         #library.link requires isbn-13, so convert book.isbn to isbn-13
             isbn13 = convert_isbn(user_isbn)
 
-    #first title is param
-    book = Book(title=title[0], author=author[0], book_cover=cover_url[0], ISBN=user_isbn, book_availability=True, user_id=session['user_id'])
+    #first title is para
+    book = Book(title=title[0], author=author[0], book_cover=cover_url[0], isbn=user_isbn, description=description, pagecount=pagecount, maincategory=maincategory, publishdate=publishdate, book_availability=True, user_id=session['user_id'])
 
     user = User.query.get(session['user_id'])
 
@@ -286,16 +324,14 @@ def search_func():
             zipcode_result = User.query.filter(User.zipcode == search_terms).all()
 
             for user in zipcode_result:
-
-                print(user.books)
-
-            book_result = Book.query.filter(Book.user_id == user.user_id).all()
+                book_result = Book.query.filter(Book.user_id == user.user_id).all()
           
     #Filter out the available books from search results, serialize each book to a dictionary, then append in available[].
     available_books = []
 
     if book_result:
         for book in book_result:
+            # print(user.zipcode)
             if book.book_availability == True:
                 book = book.serialize()
                 print(book)
@@ -385,8 +421,8 @@ def book_list():
 
 
     books = Book.query.filter(Book.user_id == session['user_id']).all()
-
-    
+    print("books list")
+    print(books)
     return render_template("book_list.html", books=books)
 
 
