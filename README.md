@@ -5,7 +5,7 @@ Users can simply enter their book ISBN numbers into the application, where the G
 
 Video Demo: https://youtu.be/eg-83beBiRY
 
-###  Features
+##  Features
 
 <p align="center">
   Home Page
@@ -58,13 +58,13 @@ Video Demo: https://youtu.be/eg-83beBiRY
   <img width="460" height="300" src="https://media.giphy.com/media/LMcY86GSJRi0UBWsnV/giphy.gif">
 </p>
 
-### Tech Stack
+## Tech Stack
 * **Back-End**: - Python, Flask, Jinja, SQLAlchemy, PostgreSQL
 * **Front-End**:- HTML/CSS, Bootstrap, JQuery, JavaScript, AJAX
 * **APIS**: - Google Map, Google Books, Twillio
 
 
-### Setup and installation
+## Setup and installation
 Clone repository:
 ```
 $ git clone https://github.com/yparks/bookUtopia.git
@@ -97,6 +97,6 @@ $ python3 server.py 
 ```
 Navigate to localhost:5000 in browser
 
-### Future Features
-* Give recommendation for user based on their interests of the books by using machine learning 
+## Future Features
+* Give recommendation for user based on their interests of the books by using Machine Learning 
 * Implement React to user interfaces
