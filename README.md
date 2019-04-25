@@ -7,3 +7,10 @@ Video Demo: https://youtu.be/eg-83beBiRY
 
 # Features
 
+
+
+<p align="center">
+  Home Page
+  <br>
+  <img width="460" height="300" src="https://media.giphy.com/media/SUFTlmyxli2G1tDoXI/giphy.gif">
+</p>
