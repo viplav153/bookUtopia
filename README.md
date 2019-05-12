@@ -61,7 +61,7 @@ Video Demo: https://youtu.be/eg-83beBiRY
 ## Tech Stack
 * **Back-End**: - Python, Flask, Jinja, SQLAlchemy, PostgreSQL
 * **Front-End**:- HTML/CSS, Bootstrap, JQuery, JavaScript, AJAX
-* **APIS**: - Google Map, Google Books, Twillio
+* **APIs**: - Google Map, Google Books, Twillio
 
 
 ## Setup and installation
